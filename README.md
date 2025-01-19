@@ -48,3 +48,19 @@ a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 ## TODOs
 
 - `Dockerfile` requires that the JAR file is already built, need to automate it so that running the whole system from scratch is as simple as running a single docker compose command
+
+## Notes
+
+- Code is formatted using the [`Spotless`](https://github.com/diffplug/spotless/tree/main/plugin-maven) Maven plugin, following [Google Java Style](https://google.github.io/styleguide/javaguide.html), with the `AOSP` variation.
+
+- To check formatting:
+
+```sh
+mvn spotless:check # or just mvn verify
+```
+
+- To apply formatting:
+
+```sh
+mvn spotless:apply
+```
