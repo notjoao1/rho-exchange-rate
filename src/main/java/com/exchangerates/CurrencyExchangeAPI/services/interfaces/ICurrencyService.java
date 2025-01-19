@@ -1,4 +1,4 @@
-package com.exchangerates.CurrencyExchangeAPI.interfaces;
+package com.exchangerates.CurrencyExchangeAPI.services.interfaces;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
