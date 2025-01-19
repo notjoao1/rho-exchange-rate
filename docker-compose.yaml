@@ -10,11 +10,13 @@ services:
       - KEYDB_PASSWORD=${KEYDB_PASSWORD}
     networks:
       - app-network
+    volumes:
+      - .:/app
     depends_on:
       - keydb
 
   keydb:
-    image: eqalpha/keydb
+    image: eqalpha/keydb:x86_64_v6.3.4
     restart: unless-stopped
     ports:
       - "6379:6379"
