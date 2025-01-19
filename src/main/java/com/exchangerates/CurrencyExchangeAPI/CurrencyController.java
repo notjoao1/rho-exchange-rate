@@ -2,8 +2,8 @@ package com.exchangerates.CurrencyExchangeAPI;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
-import java.time.Instant;
-import java.util.Map;
+import com.exchangerates.CurrencyExchangeAPI.interfaces.ICurrencyService;
+import java.util.HashSet;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/currency")
 @AllArgsConstructor
 public class CurrencyController {
-    private final CurrencyService currencyService;
+    private final ICurrencyService currencyService;
 
     /**
      * Fetches and returns currency conversion rates between different currencies.
@@ -28,11 +28,8 @@ public class CurrencyController {
     public ResponseEntity<CurrencyConversionDTO> getConversionRateBetweenCurrencies(
             @RequestParam("from") String baseCurrency,
             @RequestParam("to") Optional<String> targetCurrency) {
-        var test = new CurrencyConversionDTO();
-        test.setBase("EUR");
-        test.setRateTimestamp(Instant.now());
-        test.setTargets(Map.of("USD", 1.2, "GBP", 0.8, "JPY", 130.0));
-        return ResponseEntity.ok(test);
+        return ResponseEntity.ok(
+                currencyService.getCurrencyConversionRates(baseCurrency, targetCurrency));
     }
 
     /**
@@ -45,11 +42,16 @@ public class CurrencyController {
             @RequestParam("from") String baseCurrency,
             @RequestParam("to") String targetCurrencies,
             @RequestParam("value") double valueToConvert) {
+        // parse 'to' query parameter: should be a comma separated list of currencies encoded in
+        // a single string. Example: 'USD,AUD,CAD,EUR,CHF' -> 'USD,AUD,CAD,EUR,CHF'
+        var targetCurrencySet = new HashSet<String>();
+        var currenciesToConvertTo = targetCurrencies.toUpperCase().split(",");
+        for (var currency : currenciesToConvertTo) {
+            targetCurrencySet.add(currency);
+        }
 
-        var test = new ValueConversionDTO();
-        test.setBase("EUR");
-        test.setRequestedValue(20.0);
-        test.setConversions(Map.of("USD", 21.25, "CAD", 25.0));
-        return ResponseEntity.ok(test);
+        return ResponseEntity.ok(
+                currencyService.convertCurrencyValues(
+                        baseCurrency, targetCurrencySet, valueToConvert));
     }
 }
