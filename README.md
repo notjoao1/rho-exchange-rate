@@ -43,3 +43,8 @@ a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 4. Rate limiting for API keys. Manage this through Redis, so that, once again, multiple instances of the API could all talk to the same Redis instance and manage rate limiting efficiently (note: use Spring Boot Filters for this)
 
 5. Code styling
+
+
+## TODOs
+
+- `Dockerfile` requires that the JAR file is already built, need to automate it so that running the whole system from scratch is as simple as running a single docker compose command

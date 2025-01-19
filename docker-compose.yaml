@@ -1,0 +1,33 @@
+services:
+  spring-boot-app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYDB_HOST=keydb
+      - KEYDB_PORT=6379
+      - KEYDB_PASSWORD=${KEYDB_PASSWORD}
+    networks:
+      - app-network
+    depends_on:
+      - keydb
+
+  keydb:
+    image: eqalpha/keydb
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      - KEYDB_PASSWORD=${KEYDB_PASSWORD}
+    volumes:
+      - keydb_data:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  keydb_data:

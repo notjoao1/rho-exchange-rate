@@ -6,8 +6,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class CurrencyService {
-    @Autowired
-    private final RestTemplate httpClient;
+    // @Autowired
+    // private final RestTemplate httpClient;
 
     // TODO: currency conversion from A to B
     // TODO: all exchange rates for currency A
