@@ -2,7 +2,6 @@ package com.exchangerates.CurrencyExchangeAPI.contracts;
 
 import java.time.Instant;
 import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

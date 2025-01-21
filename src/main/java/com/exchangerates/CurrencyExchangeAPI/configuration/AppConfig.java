@@ -1,5 +1,6 @@
 package com.exchangerates.CurrencyExchangeAPI.configuration;
 
+import com.exchangerates.CurrencyExchangeAPI.exception.RestTemplateResponseErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -9,6 +10,8 @@ public class AppConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        var restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
+        return restTemplate;
     }
 }

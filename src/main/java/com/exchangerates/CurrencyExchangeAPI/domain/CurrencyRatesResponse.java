@@ -1,7 +1,6 @@
 package com.exchangerates.CurrencyExchangeAPI.domain;
 
 import java.util.Map;
-
 import lombok.Data;
 
 @Data
