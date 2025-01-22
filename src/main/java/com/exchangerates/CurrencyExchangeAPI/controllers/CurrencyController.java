@@ -42,7 +42,7 @@ public class CurrencyController {
             @RequestParam("from") String baseCurrency,
             @RequestParam("to") String targetCurrencies,
             @RequestParam("value") double valueToConvert) {
-        // parse 'to' query parameter: should be a comma separated list of currencies encoded in
+        // parse 'to' query parameter: a comma separated list of currencies encoded in
         // a single string. Example: 'USD,AUD,CAD,EUR,CHF' -> 'USD,AUD,CAD,EUR,CHF'
         var targetCurrencySet = new HashSet<String>();
         var currenciesToConvertTo = targetCurrencies.toUpperCase().split(",");
