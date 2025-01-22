@@ -6,6 +6,7 @@ import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
@@ -29,7 +32,7 @@ public class CurrencyService implements ICurrencyService {
     @Value("${cache.ttl.rates:60}")
     private long ratesTtlSeconds;
 
-    @Value("${currency.exchangerate.apikey}")
+    @Value("${exchangerate.apikey}")
     private String exchangeRateKey;
 
     @Autowired
@@ -99,6 +102,7 @@ public class CurrencyService implements ICurrencyService {
         // {baseURL}/live?accessKey=X&source=USD&currencies=EUR,CHF,SGD
         var requestUri =
                 UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
+                        .queryParam("access_key", exchangeRateKey)
                         .queryParam("source", baseCurrency)
                         .queryParam(
                                 "currencies",
@@ -110,10 +114,22 @@ public class CurrencyService implements ICurrencyService {
                                                                 "%s,%s", symbolsString, currency)))
                         .toUriString();
 
+        logger.info("GET request to external API at {}.", requestUri);
         var currencyRatesResponse =
                 httpClient.getForEntity(requestUri, CurrencyRatesResponse.class).getBody();
+
+        if (!currencyRatesResponse.isSuccess()) {
+            throw new ResponseStatusException(
+                    HttpStatusCode.valueOf(currencyRatesResponse.getError().getCode()),
+                    currencyRatesResponse.getError().getInfo());
+        }
+
+        transformAPIResponse(currencyRatesResponse);
+        System.out.println("transformation hopefuilly worked");
+        System.out.println(currencyRatesResponse);
+
         // save fetched rates to cache
-        saveRatesResponseToCache(currencyRatesResponse);
+        saveRatesResponseToCache(currencyRatesResponse, targetCurrencies);
 
         return currencyRatesResponse;
     }
@@ -178,13 +194,28 @@ public class CurrencyService implements ICurrencyService {
         return Optional.empty();
     }
 
-    private void saveRatesResponseToCache(CurrencyRatesResponse res) {
+    /**
+     * Saves response obtained to cache, based on what the list of requested currencies were.
+     * If no target currencies were supplied, that means we should cache the whole request as a whole,
+     * otherwise, we will cache every requested currency individually.
+     */
+    private void saveRatesResponseToCache(
+            CurrencyRatesResponse res, List<String> targetCurrencies) {
+        if (targetCurrencies.size() == 0) {
+            cacheService.set(
+                    buildCacheKey(res.getSource(), targetCurrencies.stream().findFirst()),
+                    new CachedRates(res.getQuotes(), res.getTimestamp()),
+                    Duration.ofSeconds(ratesTtlSeconds));
+            return;
+        }
+
         for (var currencyExchangePair : res.getQuotes().entrySet()) {
             var target = currencyExchangePair.getKey();
             cacheService.set(
                     buildCacheKey(res.getSource(), Optional.of(target)),
                     new CachedRates(
-                            Map.of(target, currencyExchangePair.getValue()), res.getTimestamp()));
+                            Map.of(target, currencyExchangePair.getValue()), res.getTimestamp()),
+                            Duration.ofSeconds(ratesTtlSeconds));
         }
     }
 
@@ -201,5 +232,22 @@ public class CurrencyService implements ICurrencyService {
 
     private CurrencyConversionDTO mapToConversionDTO(CurrencyRatesResponse res) {
         return new CurrencyConversionDTO(res.getSource(), res.getTimestamp(), res.getQuotes());
+    }
+
+    /**
+     * This method's purpose is to change the rates mapping portion of the response,
+     * removing the prefix of the source currency from the multiple target currencies.
+     * For example, a request from EUR to USD, will return, in the quotes field,
+     * {"EURUSD": 1.2}. This method turns that into {"USD": 1.2}
+     */
+    private void transformAPIResponse(CurrencyRatesResponse response) {
+        var newQuotes = new HashMap<String, Double>();
+        var sourceCurrency = response.getSource();
+        for (var currencyExchangePair : response.getQuotes().entrySet()) {
+            var targetCurrency = currencyExchangePair.getKey().substring(sourceCurrency.length());
+            newQuotes.put(targetCurrency, currencyExchangePair.getValue());
+        }
+
+        response.setQuotes(newQuotes);
     }
 }

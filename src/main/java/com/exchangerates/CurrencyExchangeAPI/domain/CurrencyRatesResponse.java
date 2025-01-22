@@ -13,4 +13,6 @@ public class CurrencyRatesResponse {
     private Instant timestamp;
     private String source;
     private Map<String, Double> quotes;
+    // filled out when success = false
+    private CurrencyRatesResponseError error;
 }
