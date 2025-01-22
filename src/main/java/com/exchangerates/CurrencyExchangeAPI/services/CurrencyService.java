@@ -125,9 +125,6 @@ public class CurrencyService implements ICurrencyService {
         }
 
         transformAPIResponse(currencyRatesResponse);
-        System.out.println("transformation hopefuilly worked");
-        System.out.println(currencyRatesResponse);
-
         // save fetched rates to cache
         saveRatesResponseToCache(currencyRatesResponse, targetCurrencies);
 
