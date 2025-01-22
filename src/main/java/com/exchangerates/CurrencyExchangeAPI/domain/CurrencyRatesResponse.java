@@ -1,5 +1,6 @@
 package com.exchangerates.CurrencyExchangeAPI.domain;
 
+import java.time.Instant;
 import java.util.Map;
 import lombok.Data;
 
@@ -8,4 +9,5 @@ public class CurrencyRatesResponse {
     private String base;
     // rates to convert between 'base' and other currencies
     private Map<String, Double> rates;
+    private Instant timestamp;
 }

@@ -25,6 +25,5 @@ public class RedisCacheService<V> implements ICacheService<V> {
     @Override
     public void set(String key, V value) {
         redisTemplate.opsForValue().set(key, value);
-        System.out.println("SAVING " + key + " TO REDIS");
     }
 }
