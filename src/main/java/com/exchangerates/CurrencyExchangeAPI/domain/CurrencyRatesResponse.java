@@ -4,10 +4,13 @@ import java.time.Instant;
 import java.util.Map;
 import lombok.Data;
 
+/**
+ * Based on the Base API response from https://exchangerate.host/documentation
+ */
 @Data
 public class CurrencyRatesResponse {
-    private String base;
-    // rates to convert between 'base' and other currencies
-    private Map<String, Double> rates;
+    private boolean success;
     private Instant timestamp;
+    private String source;
+    private Map<String, Double> quotes;
 }

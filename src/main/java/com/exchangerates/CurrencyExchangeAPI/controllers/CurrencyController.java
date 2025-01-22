@@ -3,7 +3,7 @@ package com.exchangerates.CurrencyExchangeAPI.controllers;
 import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,14 +44,14 @@ public class CurrencyController {
             @RequestParam("value") double valueToConvert) {
         // parse 'to' query parameter: a comma separated list of currencies encoded in
         // a single string. Example: 'USD,AUD,CAD,EUR,CHF' -> 'USD,AUD,CAD,EUR,CHF'
-        var targetCurrencySet = new HashSet<String>();
+        var targetCurrencyList = new ArrayList<String>();
         var currenciesToConvertTo = targetCurrencies.toUpperCase().split(",");
         for (var currency : currenciesToConvertTo) {
-            targetCurrencySet.add(currency);
+            targetCurrencyList.add(currency);
         }
 
         return ResponseEntity.ok(
                 currencyService.convertCurrencyValues(
-                        baseCurrency, targetCurrencySet, valueToConvert));
+                        baseCurrency, targetCurrencyList, valueToConvert));
     }
 }

@@ -34,11 +34,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorMessage> handleMissingParameter(MissingServletRequestParameterException ex) {
+    public ResponseEntity<ErrorMessage> handleMissingParameter(
+            MissingServletRequestParameterException ex) {
         logger.error("Missing required parameter: {}", ex.getParameterName());
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorMessage(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

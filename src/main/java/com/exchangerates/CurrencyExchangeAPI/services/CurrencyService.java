@@ -2,16 +2,14 @@ package com.exchangerates.CurrencyExchangeAPI.services;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
-
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,77 +22,44 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CurrencyService implements ICurrencyService {
     private static final Logger logger = LoggerFactory.getLogger(CurrencyService.class);
     private final RestTemplate httpClient;
-    private final ICacheService<CurrencyRatesResponse> cacheService;
-    private final String BASE_FRANKFURTER_API_URL = "https://api.frankfurter.dev/v1";
+    private final ICacheService<CachedRates> cacheService;
+    private final String BASE_EXCHANGERATE_API_URL = "https://api.exchangerate.host/live";
 
     // default rates TTL to 60 seconds
     @Value("${cache.ttl.rates:60}")
     private long ratesTtlSeconds;
 
+    @Value("${currency.exchangerate.apikey}")
+    private String exchangeRateKey;
+
     @Autowired
-    public CurrencyService(RestTemplate httpClient, ICacheService<CurrencyRatesResponse> cacheService) {
+    public CurrencyService(RestTemplate httpClient, ICacheService<CachedRates> cacheService) {
         this.httpClient = httpClient;
         this.cacheService = cacheService;
     }
 
+    @Override
     public CurrencyConversionDTO getCurrencyConversionRates(
             String baseCurrency, Optional<String> targetCurrency) {
 
-        var cachedCurrencyRates = getCachedRatesResponse(baseCurrency, targetCurrency);
-        if (cachedCurrencyRates.isPresent()) {
-            logger.debug("Cache HIT for base = '{}', target = '{}'.", baseCurrency, targetCurrency);
-            var currencyRate = cachedCurrencyRates.get();
-            return mapToConversionDTO(currencyRate);
-        }
-        logger.debug("Cache MISS for base = '{}', target = '{}'.", baseCurrency, targetCurrency);
-
-        var requestUri =
-                UriComponentsBuilder.fromUriString(BASE_FRANKFURTER_API_URL + "/latest")
-                        .queryParam("base", baseCurrency)
-                        .queryParamIfPresent("symbols", targetCurrency)
-                        .toUriString();
-
-        logger.info("Making a GET request to external API with URI = '{}'.", requestUri);
         var currencyRatesResponse =
-                httpClient.getForEntity(requestUri, CurrencyRatesResponse.class)
-                          .getBody();
-        currencyRatesResponse.setTimestamp(Instant.now());
-
-        // cache the response for the defined TTL
-        var requestCacheKey = buildCacheKey(baseCurrency, targetCurrency);
-        logger.info("Caching API response for key '{}''.", requestCacheKey);
-        cacheService.set(requestCacheKey, currencyRatesResponse, Duration.ofSeconds(ratesTtlSeconds));
+                (targetCurrency.isEmpty())
+                        ? fetchCurrencyExchangeRates(baseCurrency, List.of())
+                        : fetchCurrencyExchangeRates(baseCurrency, List.of(targetCurrency.get()));
 
         return mapToConversionDTO(currencyRatesResponse);
     }
 
-    // TODO: value conversion from currency A to B
-    // TODO: value conversion from currency A to a list of currencies
     @Override
     public ValueConversionDTO convertCurrencyValues(
-            String baseCurrency, Set<String> targetCurrencies, double valueToConvert) {
-        var requestUri =
-                UriComponentsBuilder.fromUriString(BASE_FRANKFURTER_API_URL + "/latest")
-                        .queryParam("base", baseCurrency)
-                        .queryParam(
-                                "symbols",
-                                targetCurrencies.stream()
-                                        .reduce(
-                                                "",
-                                                (symbolsString, currency) ->
-                                                        String.format(
-                                                                "%s,%s", symbolsString, currency)))
-                        .toUriString();
-
-        logger.info("Making a GET request to external API with URI = '{}'.", requestUri);
-        var currencyRatesResponse =
-                httpClient.getForEntity(requestUri, CurrencyRatesResponse.class);
+            String baseCurrency, List<String> targetCurrencies, double valueToConvert) {
+        var currencyRatesResponse = fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
 
         // build a response conversion DTO
         var valueConversionResponse =
                 new ValueConversionDTO(baseCurrency, valueToConvert, new HashMap<>());
 
-        for (var currencyExchangeRatePair : currencyRatesResponse.getBody().getRates().entrySet()) {
+        for (var currencyExchangeRatePair : currencyRatesResponse.getQuotes().entrySet()) {
             String targetCurrency = currencyExchangeRatePair.getKey();
             double conversionRate = currencyExchangeRatePair.getValue();
             valueConversionResponse
@@ -106,6 +71,54 @@ public class CurrencyService implements ICurrencyService {
     }
 
     /**
+     * Inner method to fetch exchange rates, handling caching and multiple currencies.
+     * @return Returns the external API's response to the query of currency exchange rates
+     */
+    private CurrencyRatesResponse fetchCurrencyExchangeRates(
+            String baseCurrency, List<String> targetCurrencies) {
+        // Check for caching: only when we only have a single targetCurrency, or 0 targetCurrencies
+        if (targetCurrencies.size() <= 1) {
+            // check for cached exchange rates
+            Optional<String> targetCurrency = targetCurrencies.stream().findFirst();
+            var cachedCurrencyRates = getCachedRatesResponse(baseCurrency, targetCurrency);
+
+            if (cachedCurrencyRates.isPresent()) {
+                logger.debug(
+                        "Cache HIT for base = '{}', target = '{}'.", baseCurrency, targetCurrency);
+                var responseToReturn = new CurrencyRatesResponse();
+                responseToReturn.setQuotes(cachedCurrencyRates.get().getRates());
+                responseToReturn.setSource(baseCurrency);
+                responseToReturn.setTimestamp(cachedCurrencyRates.get().getTimestamp());
+
+                return responseToReturn;
+            }
+            logger.debug("Cache MISS for base = '{}', target = '{}'", baseCurrency, targetCurrency);
+        }
+
+        // example: query from USD to EUR/CHF/SGD -
+        // {baseURL}/live?accessKey=X&source=USD&currencies=EUR,CHF,SGD
+        var requestUri =
+                UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
+                        .queryParam("source", baseCurrency)
+                        .queryParam(
+                                "currencies",
+                                targetCurrencies.stream()
+                                        .reduce(
+                                                "",
+                                                (symbolsString, currency) ->
+                                                        String.format(
+                                                                "%s,%s", symbolsString, currency)))
+                        .toUriString();
+
+        var currencyRatesResponse =
+                httpClient.getForEntity(requestUri, CurrencyRatesResponse.class).getBody();
+        // save fetched rates to cache
+        saveRatesResponseToCache(currencyRatesResponse);
+
+        return currencyRatesResponse;
+    }
+
+    /**
      * Retrieves the rates response from the cache if present. If targetCurrency is included,
      * searches for cached response from (baseCurrency) -> (targetCurrency), but also
      * the other way around.
@@ -113,49 +126,67 @@ public class CurrencyService implements ICurrencyService {
      * @param targetCurrency The target currency to search for.
      * @return An optional containing a cached exchange rate response, if present in the cache.
      */
-    private Optional<CurrencyRatesResponse> getCachedRatesResponse(String baseCurrency, Optional<String> targetCurrency) {
+    private Optional<CachedRates> getCachedRatesResponse(
+            String baseCurrency, Optional<String> targetCurrency) {
         if (targetCurrency.isEmpty()) {
             return cacheService.get(buildCacheKey(baseCurrency, targetCurrency));
         }
 
-        var baseToTarget = cacheService.get(buildCacheKey(baseCurrency, targetCurrency));    
+        // A -> B cache look up
+        var baseToTarget = cacheService.get(buildCacheKey(baseCurrency, targetCurrency));
         if (baseToTarget.isPresent()) {
             return baseToTarget;
         }
 
-        var targetToBase = cacheService.get(buildCacheKey(targetCurrency.get(), Optional.of(baseCurrency)));
+        // B -> A cache look up
+        var targetToBase =
+                cacheService.get(buildCacheKey(targetCurrency.get(), Optional.of(baseCurrency)));
         if (targetToBase.isPresent()) {
             var targetToBaseCachedRate = targetToBase.get();
-            // we have B -> A, but we have to return A -> B, so that it is transparent
-            // for the consumer of this method
-            var reversedRatesResponse = new CurrencyRatesResponse();
-            reversedRatesResponse.setBase(baseCurrency);
-            reversedRatesResponse.setTimestamp(targetToBaseCachedRate.getTimestamp());
-
             var reversedConversionRate = targetToBaseCachedRate.getRates().get(baseCurrency);
-            // A -> B rate is equal to 1/(B -> A) rate
-            reversedRatesResponse.setRates(Map.of(targetCurrency.get(), 1/reversedConversionRate));
-            return Optional.of(reversedRatesResponse);
+            // A -> B rate ==>  1/(B -> A) rate
+            return Optional.of(
+                    new CachedRates(
+                            Map.of(targetCurrency.get(), 1 / reversedConversionRate),
+                            targetToBaseCachedRate.getTimestamp()));
         }
 
-        // if we have a mapping of target -> (ALL), we can also infer base -> target
+        // B -> (ALL) cache look up
         var targetToAny = cacheService.get(buildCacheKey(targetCurrency.get(), Optional.empty()));
         if (targetToAny.isPresent()) {
             var targetToAnyCachedRates = targetToAny.get();
-
-            var reversedRatesResponse = new CurrencyRatesResponse();
-            reversedRatesResponse.setBase(baseCurrency);
-            reversedRatesResponse.setTimestamp(targetToAnyCachedRates.getTimestamp());
-
             var reversedConversionRate = targetToAnyCachedRates.getRates().get(baseCurrency);
             // A -> B rate is equal to 1/(B -> A) rate
-            reversedRatesResponse.setRates(Map.of(targetCurrency.get(), 1/reversedConversionRate));
-            return Optional.of(reversedRatesResponse);
+            return Optional.of(
+                    new CachedRates(
+                            Map.of(targetCurrency.get(), 1 / reversedConversionRate),
+                            targetToAnyCachedRates.getTimestamp()));
+        }
+
+        // A -> (ALL) cache look up
+        var baseToAny = cacheService.get(buildCacheKey(baseCurrency, Optional.empty()));
+        if (baseToAny.isPresent()) {
+            var baseToAnyCachedRates = baseToAny.get();
+            var conversionRate = baseToAnyCachedRates.getRates().get(targetCurrency.get());
+            // A -> B rate is equal to 1/(B -> A) rate
+            return Optional.of(
+                    new CachedRates(
+                            Map.of(targetCurrency.get(), conversionRate),
+                            baseToAnyCachedRates.getTimestamp()));
         }
 
         return Optional.empty();
     }
 
+    private void saveRatesResponseToCache(CurrencyRatesResponse res) {
+        for (var currencyExchangePair : res.getQuotes().entrySet()) {
+            var target = currencyExchangePair.getKey();
+            cacheService.set(
+                    buildCacheKey(res.getSource(), Optional.of(target)),
+                    new CachedRates(
+                            Map.of(target, currencyExchangePair.getValue()), res.getTimestamp()));
+        }
+    }
 
     /**
      * Builds a cache key for caching responses based on baseCurrency and targetCurrency
@@ -169,6 +200,6 @@ public class CurrencyService implements ICurrencyService {
     }
 
     private CurrencyConversionDTO mapToConversionDTO(CurrencyRatesResponse res) {
-        return new CurrencyConversionDTO(res.getBase(), res.getTimestamp(), res.getRates());
+        return new CurrencyConversionDTO(res.getSource(), res.getTimestamp(), res.getQuotes());
     }
 }

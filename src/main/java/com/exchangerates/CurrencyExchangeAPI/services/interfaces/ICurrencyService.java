@@ -2,8 +2,8 @@ package com.exchangerates.CurrencyExchangeAPI.services.interfaces;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface ICurrencyService {
     /**
@@ -26,5 +26,5 @@ public interface ICurrencyService {
      * respective converted values.
      */
     ValueConversionDTO convertCurrencyValues(
-            String baseCurrency, Set<String> targetCurrencies, double valueToConvert);
+            String baseCurrency, List<String> targetCurrencies, double valueToConvert);
 }
