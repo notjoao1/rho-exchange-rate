@@ -8,22 +8,35 @@ services:
       - KEYDB_HOST=keydb
       - KEYDB_PORT=6379
       - KEYDB_PASSWORD=${KEYDB_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - app-network
     volumes:
       - .:/app
     depends_on:
       - keydb
+      - db
 
   keydb:
     image: eqalpha/keydb:x86_64_v6.3.4
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     environment:
       - KEYDB_PASSWORD=${KEYDB_PASSWORD}
     volumes:
       - keydb_data:/data
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - app-network
 
