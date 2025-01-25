@@ -1,7 +1,7 @@
 package com.exchangerates.CurrencyExchangeAPI.services;
 
-import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
-import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
