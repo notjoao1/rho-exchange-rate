@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("Not found"));
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorMessage> handleBusinessException(BusinessException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessage> handleDefaultException(Exception ex) {
         logger.error("Exception caught - {}: {}", ex.getClass(), ex.getMessage());
