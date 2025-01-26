@@ -4,6 +4,8 @@ import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConvers
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
+import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
+import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheKeyBuilderService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
 import java.time.Duration;
@@ -26,6 +28,7 @@ public class CurrencyService implements ICurrencyService {
     private static final Logger logger = LoggerFactory.getLogger(CurrencyService.class);
     private final RestTemplate httpClient;
     private final ICacheService<CachedRates> cacheService;
+    private final ICacheKeyBuilderService cacheKeyBuilderService;
     private static final String BASE_EXCHANGERATE_API_URL = "https://api.exchangerate.host/live";
 
     // default rates TTL to 60 seconds
@@ -36,9 +39,13 @@ public class CurrencyService implements ICurrencyService {
     private String exchangeRateKey;
 
     @Autowired
-    public CurrencyService(RestTemplate httpClient, ICacheService<CachedRates> cacheService) {
+    public CurrencyService(
+            RestTemplate httpClient,
+            ICacheService<CachedRates> cacheService,
+            ICacheKeyBuilderService cacheKeyBuilderService) {
         this.httpClient = httpClient;
         this.cacheService = cacheService;
+        this.cacheKeyBuilderService = cacheKeyBuilderService;
     }
 
     @Override
@@ -56,6 +63,10 @@ public class CurrencyService implements ICurrencyService {
     @Override
     public ValueConversionDTO convertCurrencyValues(
             String baseCurrency, List<String> targetCurrencies, double valueToConvert) {
+        if (valueToConvert <= 0) {
+            throw new BusinessException("Currency amount to convert must be greater than 0.");
+        }
+
         var currencyRatesResponse = fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
 
         // build a response conversion DTO
@@ -116,7 +127,7 @@ public class CurrencyService implements ICurrencyService {
 
         logger.info("GET request to external API at {}.", requestUri);
         var currencyRatesResponse =
-                httpClient.getForEntity(requestUri, CurrencyRatesResponse.class).getBody();
+                httpClient.getForObject(requestUri, CurrencyRatesResponse.class);
 
         if (!currencyRatesResponse.isSuccess()) {
             throw new ResponseStatusException(
@@ -141,6 +152,7 @@ public class CurrencyService implements ICurrencyService {
      */
     private Optional<CachedRates> getCachedRatesResponse(
             String baseCurrency, Optional<String> targetCurrency) {
+        // if we do not pass a targetCurrency, only check for A -> (ALL) cached rates
         if (targetCurrency.isEmpty()) {
             return cacheService.get(buildCacheKey(baseCurrency, targetCurrency));
         }
@@ -222,9 +234,7 @@ public class CurrencyService implements ICurrencyService {
      * Otherwise, 'rates:baseCurrency'
      */
     private String buildCacheKey(String baseCurrency, Optional<String> targetCurrency) {
-        return targetCurrency.isPresent()
-                ? String.format("rates:%s:%s", baseCurrency, targetCurrency.get())
-                : String.format("rates:%s", baseCurrency);
+        return cacheKeyBuilderService.buildCacheKey(baseCurrency, targetCurrency);
     }
 
     private CurrencyConversionDTO mapToConversionDTO(CurrencyRatesResponse res) {
@@ -241,7 +251,7 @@ public class CurrencyService implements ICurrencyService {
         var newQuotes = new HashMap<String, Double>();
         var sourceCurrency = response.getSource();
         for (var currencyExchangePair : response.getQuotes().entrySet()) {
-            var targetCurrency = currencyExchangePair.getKey().substring(sourceCurrency.length());
+            var targetCurrency = currencyExchangePair.getKey().replace(sourceCurrency, "");
             newQuotes.put(targetCurrency, currencyExchangePair.getValue());
         }
 
