@@ -1,12 +1,16 @@
 package com.exchangerates.CurrencyExchangeAPI.contracts.requests;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountCredentialsDTO {
-    @NotNull @Email private String email;
+    @NotEmpty @Email private String email;
 
-    @NotNull private String password;
+    @NotEmpty private String password;
 }

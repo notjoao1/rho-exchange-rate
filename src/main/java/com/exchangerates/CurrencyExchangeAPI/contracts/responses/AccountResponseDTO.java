@@ -1,9 +1,13 @@
 package com.exchangerates.CurrencyExchangeAPI.contracts.responses;
 
 import com.exchangerates.CurrencyExchangeAPI.entities.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountResponseDTO {
     private long id;
     private String email;
