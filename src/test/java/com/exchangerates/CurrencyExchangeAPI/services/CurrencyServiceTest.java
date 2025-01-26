@@ -51,7 +51,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
                 .thenReturn(
                         new CurrencyRatesResponse(
@@ -80,7 +80,7 @@ class CurrencyServiceTest {
         // Arrange
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
                 .thenReturn(
                         new CurrencyRatesResponse(
@@ -156,7 +156,7 @@ class CurrencyServiceTest {
         double amount = 100.0;
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
                 .thenReturn(
                         new CurrencyRatesResponse(
@@ -223,7 +223,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         // set an expectation on the cache - A -> B rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))))
                 .thenReturn(Optional.of(usdToEur));
@@ -248,7 +248,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         // set an expectation on the cache - B -> A rates should be cached
         when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.of(sourceCurrency))))
                 .thenReturn(Optional.of(eurToUSD));
@@ -273,7 +273,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         // set an expectation on the cache - A -> (ALL) rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.empty())))
                 .thenReturn(Optional.of(usdToAll));
@@ -298,7 +298,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         // set an expectation on the cache - B -> (ALL) rates should be cached
         when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.empty())))
                 .thenReturn(Optional.of(eurToAll));
@@ -324,7 +324,7 @@ class CurrencyServiceTest {
         double amount = 100.0;
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
-        double expectedRate = USD_TO_EUR;
+        double expectedRate = USD_TO_EUR_RATE;
         // set an expectation on the cache - A -> B rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))))
                 .thenReturn(Optional.of(usdToEur));
@@ -365,12 +365,12 @@ class CurrencyServiceTest {
 
     // Static cached rates to use in tests
     private static Instant now = Instant.now();
-    private static final double USD_TO_EUR = 2.0;
-    private static final double EUR_TO_USD = 1 / USD_TO_EUR;
-    private static CachedRates usdToEur = new CachedRates(Map.of("EUR", USD_TO_EUR), now);
-    private static CachedRates eurToUSD = new CachedRates(Map.of("USD", EUR_TO_USD), now);
+    private static final double USD_TO_EUR_RATE = 2.0;
+    private static final double EUR_TO_USD_RATE = 1 / USD_TO_EUR_RATE;
+    private static CachedRates usdToEur = new CachedRates(Map.of("EUR", USD_TO_EUR_RATE), now);
+    private static CachedRates eurToUSD = new CachedRates(Map.of("USD", EUR_TO_USD_RATE), now);
     private static CachedRates usdToAll =
-            new CachedRates(Map.of("EUR", USD_TO_EUR, "JPY", 100.0, "CHF", 5.0), now);
+            new CachedRates(Map.of("EUR", USD_TO_EUR_RATE, "JPY", 100.0, "CHF", 5.0), now);
     private static CachedRates eurToAll =
-            new CachedRates(Map.of("USD", EUR_TO_USD, "JPY", 100.0, "CHF", 5.0), now);
+            new CachedRates(Map.of("USD", EUR_TO_USD_RATE, "JPY", 100.0, "CHF", 5.0), now);
 }

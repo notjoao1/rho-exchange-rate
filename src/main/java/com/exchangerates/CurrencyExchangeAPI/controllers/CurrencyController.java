@@ -30,7 +30,7 @@ public class CurrencyController {
      */
     @GetMapping("rate")
     public ResponseEntity<CurrencyConversionDTO> getConversionRateBetweenCurrencies(
-            @RequestParam("from") String baseCurrency,
+            @Valid @NotEmpty @RequestParam("from") String baseCurrency,
             @RequestParam("to") Optional<String> targetCurrency) {
         return ResponseEntity.ok(
                 currencyService.getCurrencyConversionRates(baseCurrency, targetCurrency));
@@ -44,7 +44,7 @@ public class CurrencyController {
     @GetMapping("convert")
     public ResponseEntity<ValueConversionDTO> getConversionRateBetweenCurrencies(
             @Valid @NotEmpty @RequestParam("from") String baseCurrency,
-            @RequestParam("to") String targetCurrencies,
+            @Valid @NotEmpty @RequestParam("to") String targetCurrencies,
             @Valid @Positive @NotNull @RequestParam("value") double valueToConvert) {
         // parse 'to' query parameter: a comma separated list of currencies encoded in
         // a single string. Example: 'USD,AUD,CAD,EUR,CHF' -> 'USD,AUD,CAD,EUR,CHF'
