@@ -18,18 +18,16 @@ import org.springframework.data.redis.core.ValueOperations;
 
 @ExtendWith(MockitoExtension.class)
 class CacheServiceTest {
-    @Mock 
-    RedisTemplate<String, Integer> redisTemplate;
+    @Mock RedisTemplate<String, Integer> redisTemplate;
 
-    @InjectMocks 
-    RedisCacheService<Integer> cacheService;
+    @InjectMocks RedisCacheService<Integer> cacheService;
 
     @BeforeEach
     void setUp() {
         cacheService = new RedisCacheService<>(redisTemplate);
         when(redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
     }
-    
+
     @Test
     void givenExistingKeys_GetShouldReturnAssociatedValues() {
         // Arrange
@@ -50,7 +48,7 @@ class CacheServiceTest {
         var key = "test:key";
         when(redisTemplate.opsForValue().get(key)).thenReturn(null);
 
-        // Act 
+        // Act
         var optionalResult = cacheService.get(key);
 
         // Assert
@@ -62,7 +60,7 @@ class CacheServiceTest {
         // Arrange
         var key = "test:key";
         Integer value = 505050;
-    
+
         // Act
         cacheService.set(key, value);
 

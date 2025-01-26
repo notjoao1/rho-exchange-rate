@@ -3,6 +3,10 @@ package com.exchangerates.CurrencyExchangeAPI.controllers;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.util.Arrays;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -39,9 +43,9 @@ public class CurrencyController {
      */
     @GetMapping("convert")
     public ResponseEntity<ValueConversionDTO> getConversionRateBetweenCurrencies(
-            @RequestParam("from") String baseCurrency,
+            @Valid @NotEmpty @RequestParam("from") String baseCurrency,
             @RequestParam("to") String targetCurrencies,
-            @RequestParam("value") double valueToConvert) {
+            @Valid @Positive @NotNull @RequestParam("value") double valueToConvert) {
         // parse 'to' query parameter: a comma separated list of currencies encoded in
         // a single string. Example: 'USD,AUD,CAD,EUR,CHF' -> 'USD,AUD,CAD,EUR,CHF'
         var currenciesToConvertTo = targetCurrencies.toUpperCase().split(",");
