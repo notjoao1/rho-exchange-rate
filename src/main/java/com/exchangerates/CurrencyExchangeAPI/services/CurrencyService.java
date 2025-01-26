@@ -115,14 +115,7 @@ public class CurrencyService implements ICurrencyService {
                 UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
                         .queryParam("access_key", exchangeRateKey)
                         .queryParam("source", baseCurrency)
-                        .queryParam(
-                                "currencies",
-                                targetCurrencies.stream()
-                                        .reduce(
-                                                "",
-                                                (symbolsString, currency) ->
-                                                        String.format(
-                                                                "%s,%s", symbolsString, currency)))
+                        .queryParam("currencies", String.join(",", targetCurrencies))
                         .toUriString();
 
         logger.info("GET request to external API at {}.", requestUri);
@@ -220,6 +213,7 @@ public class CurrencyService implements ICurrencyService {
 
         for (var currencyExchangePair : res.getQuotes().entrySet()) {
             var target = currencyExchangePair.getKey();
+            System.out.println("Gonna cache the following key: " + buildCacheKey(res.getSource(), Optional.of(target)));
             cacheService.set(
                     buildCacheKey(res.getSource(), Optional.of(target)),
                     new CachedRates(

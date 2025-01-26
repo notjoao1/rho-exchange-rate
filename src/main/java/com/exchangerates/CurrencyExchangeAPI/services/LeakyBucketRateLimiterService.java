@@ -18,7 +18,7 @@ public class LeakyBucketRateLimiterService implements IRateLimitService {
     // buckets, and the maximum capacity
     private final RedisScript<Boolean> leakyBucketScript;
 
-    private static final int DRAIN_RATE = 1;
+    private static final double DRAIN_RATE = 1.0;
     private static final int LIMIT = 10;
 
     @Override
