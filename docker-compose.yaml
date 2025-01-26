@@ -5,9 +5,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - KEYDB_HOST=keydb
-      - KEYDB_PORT=6379
-      - KEYDB_PASSWORD=${KEYDB_PASSWORD}
+      - CACHEDB_HOST=cachedb
+      - CACHEDB_PORT=6379
+      - CACHEDB_PASSWORD=${CACHEDB_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
@@ -16,16 +16,14 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - keydb
+      - cachedb 
       - db
 
-  keydb:
-    image: eqalpha/keydb:x86_64_v6.3.4
+  cachedb:
+    image: redis:6.2.17-alpine3.21
     restart: unless-stopped
     environment:
-      - KEYDB_PASSWORD=${KEYDB_PASSWORD}
-    volumes:
-      - keydb_data:/data
+      - REDIS_PASSWORD=${CACHEDB_PASSWORD}
     networks:
       - app-network
 
@@ -43,6 +41,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  keydb_data:
