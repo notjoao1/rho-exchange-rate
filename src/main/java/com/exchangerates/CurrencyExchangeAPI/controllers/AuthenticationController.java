@@ -28,7 +28,7 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
-    @GetMapping("login")
+    @GetMapping("info")
     public ResponseEntity<AccountResponseDTO> getAccountInformation(
             @Valid @RequestBody AccountCredentialsDTO loginDTO) {
         var requestedUser = authenticationService.getAccountInformation(loginDTO);
