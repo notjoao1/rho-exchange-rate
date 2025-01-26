@@ -1,50 +1,67 @@
 package com.exchangerates.CurrencyExchangeAPI.filter;
 
-import java.io.IOException;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.filter.OncePerRequestFilter;
-
+import com.exchangerates.CurrencyExchangeAPI.security.ApiKeyAuthenticationToken;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.IAuthenticationService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.IRateLimitService;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @AllArgsConstructor
 public class RateLimiterFilter extends OncePerRequestFilter {
 
     private final IAuthenticationService authenticationService;
     private final IRateLimitService rateLimitService;
+    private final Logger logger = LoggerFactory.getLogger(RateLimiterFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         // extract api key from request
         var apiKey = request.getHeader("X-API-KEY");
         if (apiKey == null) {
-            response.sendError(HttpStatus.FORBIDDEN.value(), "API key not provided");
+            logger.info("Blocked a request due to API key not being provided.");
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write("API key not provided");
             return;
         }
 
         // check if API key does exist
         if (!authenticationService.isValidAPIKey(apiKey)) {
-            response.sendError(HttpStatus.FORBIDDEN.value(), "Invalid API key");
+            logger.info("Blocked a request due to invalid API key");
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write("Invalid API key");
             return;
         }
 
-        // check rate limit
-        if (rateLimitService.isRateLimitExceeded(apiKey)) {
-            response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "Rate limit exceeded, please wait before making more requests.");
+        // apply rate limiting policy
+        if (!rateLimitService.applyRateLimiting(apiKey)) {
+            logger.info("Blocked a request due to rate limit exceeded.");
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.getWriter()
+                    .write("Rate limit exceeded, please wait before making more requests.");
+            return;
         }
 
-        // register request for rate limiting
-        rateLimitService.incrementRequestCount(apiKey);
+        // set authentication for this request
+        var apiKeyBasedAuth = new ApiKeyAuthenticationToken(apiKey);
+        SecurityContextHolder.getContext().setAuthentication(apiKeyBasedAuth);
 
         filterChain.doFilter(request, response);
     }
-    
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        var requestPath = request.getRequestURI();
+        return requestPath.contains("/auth");
+    }
 }

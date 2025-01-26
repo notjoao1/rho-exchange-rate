@@ -6,10 +6,14 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scripting.ScriptSource;
+import org.springframework.scripting.support.ResourceScriptSource;
 
 @Configuration
 public class RedisConfig {
@@ -31,5 +35,20 @@ public class RedisConfig {
         redisTemplate.setDefaultSerializer(serializer);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    // Documentation for Redis script
+    // https://docs.spring.io/spring-data/redis/reference/redis/scripting.html
+    // using DefaultRedisScript instead of RedisScript to avoid recalculating SHA1 hash multiple
+    // times,
+    // which makes the script get cached in Redis, which is faster
+    @Bean
+    public DefaultRedisScript<Boolean> rateLimitingScript() {
+        ScriptSource scriptSource =
+                new ResourceScriptSource(new ClassPathResource("scripts/leakybucket.lua"));
+        DefaultRedisScript<Boolean> script = new DefaultRedisScript<>();
+        script.setScriptSource(scriptSource);
+        script.setResultType(Boolean.class);
+        return script;
     }
 }
