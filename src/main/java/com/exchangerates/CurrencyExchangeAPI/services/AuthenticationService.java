@@ -29,9 +29,6 @@ public class AuthenticationService implements IAuthenticationService {
             throw new BusinessException("User with that email already exists");
         }
 
-        System.out.println(request.getEmail());
-        System.out.println(request.getPassword());
-
         var newUser = new User();
         newUser.setEmail(request.getEmail());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
