@@ -27,7 +27,7 @@ a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 ## Architecture
 
 - **Backend:** Spring Boot
-- **Persistent Storage:** SQLite - why? Good enough for the challenge (a small dependency)
+- **Persistent Storage:** MySQL - why? Effective solution for persisting data that can be accessed across multiple instances (user data)
 - **Caching:** Redis - why? Because if we end up scaling our backend to multiple instances, they could all share a single cache, which reduces the overall number of external API requests
 
 ## Plan
@@ -48,7 +48,6 @@ a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 ## TODOs
 
 (above -> higher priority)
-- Rate limiting/auth - the plan is simple - user/password sign up + users have an API key + we rate limit on API key with Spring Filters after validating the API keys actually exist.
 - Unit tests
 - Swagger documentation
 - `Dockerfile` requires that the JAR file is already built, need to automate it so that running the whole system from scratch is as simple as running a single docker compose command
