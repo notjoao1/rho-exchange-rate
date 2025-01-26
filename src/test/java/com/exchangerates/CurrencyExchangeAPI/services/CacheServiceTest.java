@@ -1,4 +1,4 @@
-package com.exchangerates.CurrencyExchangeAPI;
+package com.exchangerates.CurrencyExchangeAPI.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,8 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-
-import com.exchangerates.CurrencyExchangeAPI.services.RedisCacheService;
 
 @ExtendWith(MockitoExtension.class)
 class CacheServiceTest {
