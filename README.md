@@ -48,7 +48,6 @@ a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 ## TODOs
 
 (above -> higher priority)
-- Unit tests
 - Swagger documentation
 - `Dockerfile` requires that the JAR file is already built, need to automate it so that running the whole system from scratch is as simple as running a single docker compose command
 - Optimizing queries by querying list of currencies ahead of time and saving it to either Redis or a persistent store. If redis - use lazy loaded singleton that queries all currencies and keeps them in an immutable. Otherwise, just save to DB statically (maybe flyway migration to initialize the data), index column, and query when requests are made
