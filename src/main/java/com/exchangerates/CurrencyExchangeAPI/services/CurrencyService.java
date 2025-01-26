@@ -51,6 +51,9 @@ public class CurrencyService implements ICurrencyService {
     @Override
     public CurrencyConversionDTO getCurrencyConversionRates(
             String baseCurrency, Optional<String> targetCurrency) {
+        if (targetCurrency.isPresent() && baseCurrency == targetCurrency.get()) {
+            throw new BusinessException("Base currency and target currency cannot be the same.");
+        }
 
         var currencyRatesResponse =
                 (targetCurrency.isEmpty())
@@ -174,6 +177,9 @@ public class CurrencyService implements ICurrencyService {
         if (targetToAny.isPresent()) {
             var targetToAnyCachedRates = targetToAny.get();
             var reversedConversionRate = targetToAnyCachedRates.getRates().get(baseCurrency);
+            if (reversedConversionRate == null) {
+                throw new BusinessException("Source currency does not exist.");
+            }
             // A -> B rate is equal to 1/(B -> A) rate
             return Optional.of(
                     new CachedRates(
@@ -186,6 +192,9 @@ public class CurrencyService implements ICurrencyService {
         if (baseToAny.isPresent()) {
             var baseToAnyCachedRates = baseToAny.get();
             var conversionRate = baseToAnyCachedRates.getRates().get(targetCurrency.get());
+            if (conversionRate == null) {
+                throw new BusinessException("Target currency does not exist.");
+            }
             // A -> B rate is equal to 1/(B -> A) rate
             return Optional.of(
                     new CachedRates(

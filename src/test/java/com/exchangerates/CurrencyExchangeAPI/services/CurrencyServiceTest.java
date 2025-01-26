@@ -111,6 +111,22 @@ class CurrencyServiceTest {
     }
 
     @Test
+    void givenBaseAndTargetCurrenciesAreTheSame_FetchExchangeRateShouldThrow() {
+        // Arrange
+        String sourceCurrency = "USD";
+        String targetCurrency = "USD";
+
+        // Act & Assert
+        assertThrows(
+                BusinessException.class,
+                () -> {
+                    currencyService.getCurrencyConversionRates(
+                            sourceCurrency, Optional.of(targetCurrency));
+                });
+
+    }
+
+    @Test
     void givenInvalidTargetCurrency_FetchExchangeRateShouldThrow() {
         // Arrange
         String sourceCurrency = "USD";
@@ -288,6 +304,46 @@ class CurrencyServiceTest {
         // 1 cache hit should happen (A -> (ALL)), and we can get A -> B from that
         verify(cacheService, times(1))
                 .get(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency)));
+    }
+
+    @Test
+    void givenCachedSourceToAnyWithInvalidTarget_FetchExchangeRateShouldThrow() {
+        // Arrange
+        setupEmptyCacheExpectations();
+        String sourceCurrency = "USD";
+        String targetCurrency = "INVALID";
+        // set an expectation on the cache - A -> (ALL) rates should be cached
+        when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.empty())))
+                .thenReturn(Optional.of(usdToAllCachedRates));
+
+        // Act & Assert
+        assertThrows(
+                BusinessException.class,
+                () -> {
+                    currencyService.getCurrencyConversionRates(
+                            sourceCurrency, Optional.of(targetCurrency));
+                });
+
+    }
+
+    @Test
+    void givenCachedTargetToAnyWithInvalidSource_FetchExchangeRateShouldThrow() {
+        // Arrange
+        setupEmptyCacheExpectations();
+        String sourceCurrency = "INVALID";
+        String targetCurrency = "EUR";
+        // set an expectation on the cache - B -> (ALL) rates should be cached
+        when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.empty())))
+                .thenReturn(Optional.of(eurToAllCachedRates));
+
+        // Act & Assert
+        assertThrows(
+                BusinessException.class,
+                () -> {
+                    currencyService.getCurrencyConversionRates(
+                            sourceCurrency, Optional.of(targetCurrency));
+                });
+
     }
 
     @Test
