@@ -78,18 +78,19 @@ mvn spotless:apply
 - Implementation details:
 
 ```
-We can achieve O(1) rate limit checking with Redis using a single redis hash per 'rate limiting object' (in this case, i'm using API keys) by doing the following:
+We can achieve O(1) rate limit checking with Redis using a single redis hash per 'rate limiting subject' (in this case, i'm using API keys as the rate limit subject) by doing the following:
 
-    Every user has a redis hash attached to them, which will track how many requests they've made within the last T seconds, and the timestamp of the last request
+    Every user has a redis hash attached to them, which will track how many requests they've made within the last T seconds, and the timestamp of the last time the bucket was updated 
 
     It gets incremented for each request the user makes.
 
     Leaky bucket states that, a user's bucket of available requests fills up when requests are made, and is drained consistently over time.
 
-    Whenever a user makes a request, we must fetch their both the amount of requests in the bucket, and the last requests's timestamp, let's call that `last_timestamp`
+    Whenever a user makes a request, we must fetch their both the amount of requests in the bucket, and the timestamp of the last bucket update, let's call that `last_update_timestamp`
 
-    To know how much to drain from the bucket, we must calculate `delta_t = now_timestamp - last_timestamp`, and then calculate `drainage_amount = delta_t * drain_rate`, since the drain rate is per second.
+    To know how much to drain from the bucket, we must calculate `delta_t = now_timestamp - last_update_timestamp`, and then calculate `drainage_amount = delta_t * drain_rate`, since the drain rate is per second.
 
-    After calculating the new amount of requests in the bucket by draining the `drainage_amount`, we set the user's bucket capacity to the new capacity, and set the last request timestamp
+    After calculating the new amount of requests in the bucket by draining the `drainage_amount`, we set the user's bucket capacity to the new capacity, and set the last bucket update timestamp
 
+    Also, for automatic cleanup of rate limit cache objects, we set an expiry time of math.floor((bucket_capacity / leak_rate) + 1), which is the maximum amount of time (with +1 because of math.floor on the floating point division) until a bucket is completely drained
 ```
