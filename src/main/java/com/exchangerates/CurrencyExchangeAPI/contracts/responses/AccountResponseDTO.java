@@ -1,7 +1,6 @@
 package com.exchangerates.CurrencyExchangeAPI.contracts.responses;
 
 import com.exchangerates.CurrencyExchangeAPI.entities.User;
-
 import lombok.Data;
 
 @Data

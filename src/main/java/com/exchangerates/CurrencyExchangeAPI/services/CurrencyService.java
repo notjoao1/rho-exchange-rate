@@ -212,7 +212,7 @@ public class CurrencyService implements ICurrencyService {
                     buildCacheKey(res.getSource(), Optional.of(target)),
                     new CachedRates(
                             Map.of(target, currencyExchangePair.getValue()), res.getTimestamp()),
-                            Duration.ofSeconds(ratesTtlSeconds));
+                    Duration.ofSeconds(ratesTtlSeconds));
         }
     }
 

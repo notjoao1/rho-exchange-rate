@@ -1,10 +1,9 @@
 package com.exchangerates.CurrencyExchangeAPI.services.interfaces;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
+import java.util.List;
+import java.util.Optional;
 
 public interface ICurrencyService {
     /**

@@ -1,22 +1,17 @@
 package com.exchangerates.CurrencyExchangeAPI.services;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Base64;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.exchangerates.CurrencyExchangeAPI.contracts.requests.AccountCredentialsDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.AccountResponseDTO;
 import com.exchangerates.CurrencyExchangeAPI.entities.User;
 import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
 import com.exchangerates.CurrencyExchangeAPI.repository.UserRepository;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.IAuthenticationService;
-
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
@@ -27,8 +22,6 @@ public class AuthenticationService implements IAuthenticationService {
     private static final SecureRandom rng = new SecureRandom();
 
     private final PasswordEncoder passwordEncoder;
-
-    private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Override
     public AccountResponseDTO signUp(AccountCredentialsDTO request) {
@@ -70,25 +63,22 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     private User checkAuthenticationAndReturnUser(AccountCredentialsDTO request) {
-        var existingUser = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() ->
-                new BusinessException("Invalid credentials."));
+        var existingUser =
+                userRepository
+                        .findByEmail(request.getEmail())
+                        .orElseThrow(() -> new BusinessException("Invalid credentials."));
 
         if (!passwordEncoder.matches(request.getPassword(), existingUser.getPassword())) {
             throw new BusinessException("Invalid credentials.");
         }
 
         return existingUser;
-
     }
 
     private String generateAPIKey() {
         // use cryptographically secure rng to generate a random 32 byte sequence
         byte[] apiKey = new byte[32];
         rng.nextBytes(apiKey);
-
-        System.out.println("\n\n\n\nCRETAED APIK EY " + apiKey + "\n\n\n");
         return Base64.getEncoder().encodeToString(apiKey);
     }
-
 }

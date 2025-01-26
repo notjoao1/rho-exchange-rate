@@ -1,5 +1,6 @@
 package com.exchangerates.CurrencyExchangeAPI.exception;
 
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ErrorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ErrorMessage;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -51,12 +50,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorMessage> handleBusinessException(BusinessException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessage(ex.getMessage()));
+    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
