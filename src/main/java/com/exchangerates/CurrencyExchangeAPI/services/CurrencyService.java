@@ -1,7 +1,7 @@
 package com.exchangerates.CurrencyExchangeAPI.services;
 
-import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
-import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
@@ -26,7 +26,7 @@ public class CurrencyService implements ICurrencyService {
     private static final Logger logger = LoggerFactory.getLogger(CurrencyService.class);
     private final RestTemplate httpClient;
     private final ICacheService<CachedRates> cacheService;
-    private final String BASE_EXCHANGERATE_API_URL = "https://api.exchangerate.host/live";
+    private static final String BASE_EXCHANGERATE_API_URL = "https://api.exchangerate.host/live";
 
     // default rates TTL to 60 seconds
     @Value("${cache.ttl.rates:60}")
@@ -198,7 +198,7 @@ public class CurrencyService implements ICurrencyService {
      */
     private void saveRatesResponseToCache(
             CurrencyRatesResponse res, List<String> targetCurrencies) {
-        if (targetCurrencies.size() == 0) {
+        if (targetCurrencies.isEmpty()) {
             cacheService.set(
                     buildCacheKey(res.getSource(), targetCurrencies.stream().findFirst()),
                     new CachedRates(res.getQuotes(), res.getTimestamp()),
@@ -212,7 +212,7 @@ public class CurrencyService implements ICurrencyService {
                     buildCacheKey(res.getSource(), Optional.of(target)),
                     new CachedRates(
                             Map.of(target, currencyExchangePair.getValue()), res.getTimestamp()),
-                            Duration.ofSeconds(ratesTtlSeconds));
+                    Duration.ofSeconds(ratesTtlSeconds));
         }
     }
 

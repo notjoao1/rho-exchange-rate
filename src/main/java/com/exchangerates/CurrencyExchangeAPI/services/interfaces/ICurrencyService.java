@@ -1,7 +1,7 @@
 package com.exchangerates.CurrencyExchangeAPI.services.interfaces;
 
-import com.exchangerates.CurrencyExchangeAPI.contracts.CurrencyConversionDTO;
-import com.exchangerates.CurrencyExchangeAPI.contracts.ValueConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import java.util.List;
 import java.util.Optional;
 

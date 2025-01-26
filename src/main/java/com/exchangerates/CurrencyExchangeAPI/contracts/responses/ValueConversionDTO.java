@@ -1,4 +1,4 @@
-package com.exchangerates.CurrencyExchangeAPI.contracts;
+package com.exchangerates.CurrencyExchangeAPI.contracts.responses;
 
 import java.util.Map;
 import lombok.AllArgsConstructor;
