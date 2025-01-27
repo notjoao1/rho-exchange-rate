@@ -106,8 +106,8 @@ public class CurrencyService implements ICurrencyService {
         }
 
         // when we can't check cache, fetch from external API
-        var currencyRatesResponse = currencyAPIClient
-            .fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
+        var currencyRatesResponse =
+                currencyAPIClient.fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
         // save fetched rates to cache
         saveRatesResponseToCache(currencyRatesResponse, targetCurrencies);
 

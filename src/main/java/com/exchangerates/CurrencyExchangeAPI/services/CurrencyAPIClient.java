@@ -1,8 +1,10 @@
 package com.exchangerates.CurrencyExchangeAPI.services;
 
+import com.exchangerates.CurrencyExchangeAPI.domain.AvailableCurrenciesResponse;
+import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
+import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyAPIClient;
 import java.util.HashMap;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.exchangerates.CurrencyExchangeAPI.domain.AvailableCurrenciesResponse;
-import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
-import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyAPIClient;
 
 @Service
 public class CurrencyAPIClient implements ICurrencyAPIClient {
@@ -37,8 +35,8 @@ public class CurrencyAPIClient implements ICurrencyAPIClient {
                 UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL + "/list")
                         .queryParam("access_key", exchangeRateKey)
                         .toUriString();
-        var availableCurrenciesResponse = httpClient
-            .getForObject(requestUri, AvailableCurrenciesResponse.class);
+        var availableCurrenciesResponse =
+                httpClient.getForObject(requestUri, AvailableCurrenciesResponse.class);
 
         if (!availableCurrenciesResponse.isSuccess()) {
             throw new ResponseStatusException(
@@ -50,7 +48,8 @@ public class CurrencyAPIClient implements ICurrencyAPIClient {
     }
 
     @Override
-    public CurrencyRatesResponse fetchCurrencyExchangeRates(String baseCurrency, List<String> targetCurrencies) {
+    public CurrencyRatesResponse fetchCurrencyExchangeRates(
+            String baseCurrency, List<String> targetCurrencies) {
         var requestUri =
                 UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
                         .queryParam("access_key", exchangeRateKey)
@@ -72,7 +71,6 @@ public class CurrencyAPIClient implements ICurrencyAPIClient {
         transformCurrencyResponse(currencyRatesResponse);
         return currencyRatesResponse;
     }
-    
 
     /**
      * This method's purpose is to change the rates mapping portion of the response,
