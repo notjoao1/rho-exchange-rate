@@ -26,9 +26,9 @@ public class RateLimiterFilter extends OncePerRequestFilter {
         // extract api key from request
         var apiKey = request.getHeader("X-API-KEY");
         if (apiKey == null) {
-            logger.info("Blocked a request due to API key not being provided.");
-            response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.getWriter().write("API key not provided");
+            // continue down the chain, this will fail if endpoint requires authentication
+            // and pass if it doesn't
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -56,9 +56,9 @@ public class RateLimiterFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        var requestPath = request.getRequestURI();
-        return requestPath.contains("/auth");
-    }
+    // @Override
+    // protected boolean shouldNotFilter(HttpServletRequest request) {
+    //     var requestPath = request.getRequestURI();
+    //     return requestPath.contains("/auth") || requestPath.contains("/api/v1/docs") || requestPath.contains("/api/v1/swagger-ui");
+    // }
 }
