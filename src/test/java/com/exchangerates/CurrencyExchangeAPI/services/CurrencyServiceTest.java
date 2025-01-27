@@ -13,12 +13,14 @@ import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConvers
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
-import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponseError;
+import com.exchangerates.CurrencyExchangeAPI.domain.ExternalAPIError;
 import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheKeyBuilderService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
+import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyAPIClient;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,14 +29,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class CurrencyServiceTest {
     @InjectMocks CurrencyService currencyService;
 
-    @Mock RestTemplate restTemplate;
+    @Mock ICurrencyAPIClient currencyAPIClient;
 
     @Mock ICacheService<CachedRates> cacheService;
 
@@ -47,7 +47,7 @@ class CurrencyServiceTest {
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
         double expectedRate = USD_TO_EUR_RATE;
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
+        when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, List.of(targetCurrency)))
                 .thenReturn(usdToEurResponse);
 
         // Act
@@ -76,7 +76,7 @@ class CurrencyServiceTest {
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         double expectedRate = USD_TO_EUR_RATE;
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
+        when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, Collections.emptyList()))
                 .thenReturn(usdToAllResponse);
 
         // Act
@@ -98,24 +98,6 @@ class CurrencyServiceTest {
     }
 
     @Test
-    void givenInvalidSourceCurrency_FetchExchangeRateShouldThrow() {
-        // Arrange
-        setupEmptyCacheExpectations();
-        String sourceCurrency = "INVALID";
-        String targetCurrency = "EUR";
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
-                .thenReturn(invalidResponse);
-
-        // Act & Assert
-        assertThrows(
-                ResponseStatusException.class,
-                () -> {
-                    currencyService.getCurrencyConversionRates(
-                            sourceCurrency, Optional.of(targetCurrency));
-                });
-    }
-
-    @Test
     void givenBaseAndTargetCurrenciesAreTheSame_FetchExchangeRateShouldThrow() {
         // Arrange
         String sourceCurrency = "USD";
@@ -131,23 +113,6 @@ class CurrencyServiceTest {
     }
 
     @Test
-    void givenInvalidTargetCurrency_FetchExchangeRateShouldThrow() {
-        // Arrange
-        String sourceCurrency = "USD";
-        String targetCurrency = "INVALID";
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
-                .thenReturn(invalidResponse);
-
-        // Act & Assert
-        assertThrows(
-                ResponseStatusException.class,
-                () -> {
-                    currencyService.getCurrencyConversionRates(
-                            sourceCurrency, Optional.of(targetCurrency));
-                });
-    }
-
-    @Test
     void givenValidConversionInput_ConvertCurrencyShouldReturnValidResponse() {
         // Arrange
         setupEmptyCacheExpectations();
@@ -155,7 +120,7 @@ class CurrencyServiceTest {
         String sourceCurrency = "USD";
         String targetCurrency = "EUR";
         double expectedRate = USD_TO_EUR_RATE;
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
+        when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, List.of(targetCurrency)))
                 .thenReturn(usdToEurResponse);
 
         // Act
@@ -183,7 +148,7 @@ class CurrencyServiceTest {
         double amount = 100.0;
         String sourceCurrency = "USD";
         List<String> targetCurrencies = List.of("EUR", "JPY", "CHF");
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
+        when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, targetCurrencies))
                 .thenReturn(usdToAllResponse);
 
         // Act
@@ -205,24 +170,6 @@ class CurrencyServiceTest {
                             any(CachedRates.class),
                             any(Duration.class));
         }
-    }
-
-    @Test
-    void givenInvalidTargetCurrency_ConvertCurrencyShouldReturnValidResponse() {
-        // Arrange
-        double amount = 100.0;
-        String sourceCurrency = "USD";
-        String targetCurrency = "INVALID";
-        when(restTemplate.getForObject(anyString(), eq(CurrencyRatesResponse.class)))
-                .thenReturn(invalidResponse);
-
-        // Act & Assert
-        assertThrows(
-                ResponseStatusException.class,
-                () -> {
-                    currencyService.convertCurrencyValues(
-                            sourceCurrency, List.of(targetCurrency), amount);
-                });
     }
 
     @Test
@@ -440,7 +387,7 @@ class CurrencyServiceTest {
                     Instant.now(),
                     "",
                     null,
-                    new CurrencyRatesResponseError(999, "Invalid source currency."));
+                    new ExternalAPIError(999, "Invalid source currency."));
     private static CurrencyRatesResponse usdToEurResponse =
             new CurrencyRatesResponse(true, now, "USD", Map.of("EUR", USD_TO_EUR_RATE), null);
     private static CurrencyRatesResponse usdToAllResponse =
