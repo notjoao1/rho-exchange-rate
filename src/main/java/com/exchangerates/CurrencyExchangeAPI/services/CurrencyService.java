@@ -26,6 +26,7 @@ public class CurrencyService implements ICurrencyService {
     private final ICurrencyAPIClient currencyAPIClient;
     private final ICacheService<CachedRates> cacheService;
     private final ICacheKeyBuilderService cacheKeyBuilderService;
+    private final AvailableCurrenciesHolder existingCurrencies;
 
     // default rates TTL to 60 seconds
     @Value("${cache.ttl.rates:60}")
@@ -35,10 +36,12 @@ public class CurrencyService implements ICurrencyService {
     public CurrencyService(
             ICurrencyAPIClient currencyAPIClient,
             ICacheService<CachedRates> cacheService,
-            ICacheKeyBuilderService cacheKeyBuilderService) {
+            ICacheKeyBuilderService cacheKeyBuilderService,
+            AvailableCurrenciesHolder existingCurrencies) {
         this.currencyAPIClient = currencyAPIClient;
         this.cacheService = cacheService;
         this.cacheKeyBuilderService = cacheKeyBuilderService;
+        this.existingCurrencies = existingCurrencies;
     }
 
     @Override
@@ -46,6 +49,14 @@ public class CurrencyService implements ICurrencyService {
             String baseCurrency, Optional<String> targetCurrency) {
         if (targetCurrency.isPresent() && baseCurrency == targetCurrency.get()) {
             throw new BusinessException("Base currency and target currency cannot be the same.");
+        }
+
+        if (!existingCurrencies.doesCurrencyExist(baseCurrency)) {
+            throw new BusinessException("Invalid base currency - does not exist");
+        }
+
+        if (targetCurrency.isPresent() && !existingCurrencies.doesCurrencyExist(targetCurrency.get())) {
+            throw new BusinessException("Invalid target currency - does not exist");
         }
 
         var currencyRatesResponse =
@@ -61,6 +72,14 @@ public class CurrencyService implements ICurrencyService {
             String baseCurrency, List<String> targetCurrencies, double valueToConvert) {
         if (valueToConvert <= 0) {
             throw new BusinessException("Currency amount to convert must be greater than 0.");
+        }
+
+        if (!existingCurrencies.doesCurrencyExist(baseCurrency)) {
+            throw new BusinessException("Invalid base currency - does not exist");
+        }
+
+        if (!existingCurrencies.anyCurrencyExists(targetCurrencies)) {
+            throw new BusinessException("None of the target currencies exist, please provide correct input values");
         }
 
         var currencyRatesResponse = fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);

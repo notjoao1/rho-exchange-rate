@@ -4,6 +4,7 @@ import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyAPIClient;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,43 @@ public class AvailableCurrenciesHolder {
         this.currencyAPIClient = currencyAPIClient;
     }
 
-    // lazy loaded currencies - first check in-memory, then check in cache,
-    // then fetch external API
+    /**
+     * Checks if currency exists in external API.
+     * @param currency currency code
+     * @return true if currency exists, false otherwise
+     */
+    public boolean doesCurrencyExist(String currency) {
+        if (currency == null) {
+            return false;
+        }
+
+        if (getAvailableCurrencies().contains(currency)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if currency exists in external API.
+     * @param currency currency code
+     * @return true if currency exists, false otherwise
+     */
+    public boolean anyCurrencyExists(List<String> currencies) {
+        if (currencies == null || currencies.size() == 0) {
+            return false;
+        }
+
+        var availableCurrencies = getAvailableCurrencies();
+        return currencies.stream().anyMatch((target) -> availableCurrencies.contains(target));
+    }
+
+    /**
+     * Lazy loads currencies available in cache/External API.
+     * @return an immutable set of available currencies
+     */
     public Set<String> getAvailableCurrencies() {
+        // in-memory > in cache > external API
         if (availableCurrencies != null) {
             return availableCurrencies;
         }
