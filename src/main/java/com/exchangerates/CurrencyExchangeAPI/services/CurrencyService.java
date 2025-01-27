@@ -7,6 +7,7 @@ import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
 import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheKeyBuilderService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
+import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyAPIClient;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
 import java.time.Duration;
 import java.util.HashMap;
@@ -17,35 +18,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class CurrencyService implements ICurrencyService {
     private static final Logger logger = LoggerFactory.getLogger(CurrencyService.class);
-    private final RestTemplate httpClient;
+    private final ICurrencyAPIClient currencyAPIClient;
     private final ICacheService<CachedRates> cacheService;
     private final ICacheKeyBuilderService cacheKeyBuilderService;
-    private static final String BASE_EXCHANGERATE_API_URL = "https://api.exchangerate.host/live";
+    private final AvailableCurrenciesHolder existingCurrencies;
 
     // default rates TTL to 60 seconds
     @Value("${cache.ttl.rates:60}")
     private long ratesTtlSeconds;
 
-    @Value("${exchangerate.apikey}")
-    private String exchangeRateKey;
-
     @Autowired
     public CurrencyService(
-            RestTemplate httpClient,
+            ICurrencyAPIClient currencyAPIClient,
             ICacheService<CachedRates> cacheService,
-            ICacheKeyBuilderService cacheKeyBuilderService) {
-        this.httpClient = httpClient;
+            ICacheKeyBuilderService cacheKeyBuilderService,
+            AvailableCurrenciesHolder existingCurrencies) {
+        this.currencyAPIClient = currencyAPIClient;
         this.cacheService = cacheService;
         this.cacheKeyBuilderService = cacheKeyBuilderService;
+        this.existingCurrencies = existingCurrencies;
     }
 
     @Override
@@ -53,6 +49,15 @@ public class CurrencyService implements ICurrencyService {
             String baseCurrency, Optional<String> targetCurrency) {
         if (targetCurrency.isPresent() && baseCurrency == targetCurrency.get()) {
             throw new BusinessException("Base currency and target currency cannot be the same.");
+        }
+
+        if (!existingCurrencies.doesCurrencyExist(baseCurrency)) {
+            throw new BusinessException("Invalid base currency - does not exist");
+        }
+
+        if (targetCurrency.isPresent()
+                && !existingCurrencies.doesCurrencyExist(targetCurrency.get())) {
+            throw new BusinessException("Invalid target currency - does not exist");
         }
 
         var currencyRatesResponse =
@@ -68,6 +73,15 @@ public class CurrencyService implements ICurrencyService {
             String baseCurrency, List<String> targetCurrencies, double valueToConvert) {
         if (valueToConvert <= 0) {
             throw new BusinessException("Currency amount to convert must be greater than 0.");
+        }
+
+        if (!existingCurrencies.doesCurrencyExist(baseCurrency)) {
+            throw new BusinessException("Invalid base currency - does not exist");
+        }
+
+        if (!existingCurrencies.anyCurrencyExists(targetCurrencies)) {
+            throw new BusinessException(
+                    "None of the target currencies exist, please provide correct input values");
         }
 
         var currencyRatesResponse = fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
@@ -112,26 +126,9 @@ public class CurrencyService implements ICurrencyService {
             logger.debug("Cache MISS for base = '{}', target = '{}'", baseCurrency, targetCurrency);
         }
 
-        // example: query from USD to EUR/CHF/SGD -
-        // {baseURL}/live?accessKey=X&source=USD&currencies=EUR,CHF,SGD
-        var requestUri =
-                UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
-                        .queryParam("access_key", exchangeRateKey)
-                        .queryParam("source", baseCurrency)
-                        .queryParam("currencies", String.join(",", targetCurrencies))
-                        .toUriString();
-
-        logger.info("GET request to external API at {}.", requestUri);
+        // when we can't check cache, fetch from external API
         var currencyRatesResponse =
-                httpClient.getForObject(requestUri, CurrencyRatesResponse.class);
-
-        if (!currencyRatesResponse.isSuccess()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY, // 502 status code
-                    currencyRatesResponse.getError().getInfo());
-        }
-
-        transformAPIResponse(currencyRatesResponse);
+                currencyAPIClient.fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);
         // save fetched rates to cache
         saveRatesResponseToCache(currencyRatesResponse, targetCurrencies);
 
@@ -241,22 +238,5 @@ public class CurrencyService implements ICurrencyService {
 
     private CurrencyConversionDTO mapToConversionDTO(CurrencyRatesResponse res) {
         return new CurrencyConversionDTO(res.getSource(), res.getTimestamp(), res.getQuotes());
-    }
-
-    /**
-     * This method's purpose is to change the rates mapping portion of the response,
-     * removing the prefix of the source currency from the multiple target currencies.
-     * For example, a request from EUR to USD, will return, in the quotes field,
-     * {"EURUSD": 1.2}. This method turns that into {"USD": 1.2}
-     */
-    private void transformAPIResponse(CurrencyRatesResponse response) {
-        var newQuotes = new HashMap<String, Double>();
-        var sourceCurrency = response.getSource();
-        for (var currencyExchangePair : response.getQuotes().entrySet()) {
-            var targetCurrency = currencyExchangePair.getKey().replace(sourceCurrency, "");
-            newQuotes.put(targetCurrency, currencyExchangePair.getValue());
-        }
-
-        response.setQuotes(newQuotes);
     }
 }

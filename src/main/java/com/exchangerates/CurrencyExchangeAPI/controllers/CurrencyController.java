@@ -82,8 +82,13 @@ public class CurrencyController {
     public ResponseEntity<CurrencyConversionDTO> getConversionRateBetweenCurrencies(
             @Valid @NotEmpty @RequestParam("from") String baseCurrency,
             @RequestParam("to") Optional<String> targetCurrency) {
+        Optional<String> uppercaseTarget =
+                targetCurrency.isPresent()
+                        ? Optional.of(targetCurrency.get().toUpperCase())
+                        : Optional.empty();
         return ResponseEntity.ok(
-                currencyService.getCurrencyConversionRates(baseCurrency, targetCurrency));
+                currencyService.getCurrencyConversionRates(
+                        baseCurrency.toUpperCase(), uppercaseTarget));
     }
 
     @Operation(
@@ -136,6 +141,8 @@ public class CurrencyController {
         var currenciesToConvertTo = targetCurrencies.toUpperCase().split(",");
         return ResponseEntity.ok(
                 currencyService.convertCurrencyValues(
-                        baseCurrency, Arrays.asList(currenciesToConvertTo), valueToConvert));
+                        baseCurrency.toUpperCase(),
+                        Arrays.asList(currenciesToConvertTo),
+                        valueToConvert));
     }
 }
