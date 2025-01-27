@@ -13,7 +13,6 @@ import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConvers
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.domain.CachedRates;
 import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponse;
-import com.exchangerates.CurrencyExchangeAPI.domain.ExternalAPIError;
 import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheKeyBuilderService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
@@ -40,6 +39,8 @@ class CurrencyServiceTest {
 
     @Mock ICacheKeyBuilderService cacheKeyBuilderService;
 
+    @Mock AvailableCurrenciesHolder existingCurrencies;
+
     @Test
     void givenValidSourceAndTargetCurrencies_FetchExchangeRateShouldReturnValidResponse() {
         // Arrange
@@ -49,6 +50,7 @@ class CurrencyServiceTest {
         double expectedRate = USD_TO_EUR_RATE;
         when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, List.of(targetCurrency)))
                 .thenReturn(usdToEurResponse);
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrency);
 
         // Act
         CurrencyConversionDTO response =
@@ -78,6 +80,7 @@ class CurrencyServiceTest {
         double expectedRate = USD_TO_EUR_RATE;
         when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, Collections.emptyList()))
                 .thenReturn(usdToAllResponse);
+        setupExistingCurrenciesMock(sourceCurrency);
 
         // Act
         CurrencyConversionDTO response =
@@ -122,6 +125,7 @@ class CurrencyServiceTest {
         double expectedRate = USD_TO_EUR_RATE;
         when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, List.of(targetCurrency)))
                 .thenReturn(usdToEurResponse);
+        setupExistingCurrenciesMock(sourceCurrency, List.of(targetCurrency));
 
         // Act
         ValueConversionDTO conversionResult =
@@ -150,6 +154,7 @@ class CurrencyServiceTest {
         List<String> targetCurrencies = List.of("EUR", "JPY", "CHF");
         when(currencyAPIClient.fetchCurrencyExchangeRates(sourceCurrency, targetCurrencies))
                 .thenReturn(usdToAllResponse);
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrencies);
 
         // Act
         ValueConversionDTO conversionResult =
@@ -198,6 +203,7 @@ class CurrencyServiceTest {
         // set an expectation on the cache - A -> B rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))))
                 .thenReturn(Optional.of(usdToEurCachedRates));
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrency);
 
         // Act
         CurrencyConversionDTO response =
@@ -223,6 +229,7 @@ class CurrencyServiceTest {
         // set an expectation on the cache - B -> A rates should be cached
         when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.of(sourceCurrency))))
                 .thenReturn(Optional.of(eurToUSDCachedRates));
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrency);
 
         // Act
         CurrencyConversionDTO response =
@@ -248,6 +255,7 @@ class CurrencyServiceTest {
         // set an expectation on the cache - A -> (ALL) rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.empty())))
                 .thenReturn(Optional.of(usdToAllCachedRates));
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrency);
 
         // Act
         CurrencyConversionDTO response =
@@ -266,12 +274,11 @@ class CurrencyServiceTest {
     @Test
     void givenCachedSourceToAnyWithInvalidTarget_FetchExchangeRateShouldThrow() {
         // Arrange
-        setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
         String targetCurrency = "INVALID";
         // set an expectation on the cache - A -> (ALL) rates should be cached
-        when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.empty())))
-                .thenReturn(Optional.of(usdToAllCachedRates));
+        when(existingCurrencies.doesCurrencyExist(sourceCurrency)).thenReturn(true);
+        when(existingCurrencies.doesCurrencyExist(targetCurrency)).thenReturn(false);
 
         // Act & Assert
         assertThrows(
@@ -285,12 +292,9 @@ class CurrencyServiceTest {
     @Test
     void givenCachedTargetToAnyWithInvalidSource_FetchExchangeRateShouldThrow() {
         // Arrange
-        setupEmptyCacheExpectations();
         String sourceCurrency = "INVALID";
         String targetCurrency = "EUR";
-        // set an expectation on the cache - B -> (ALL) rates should be cached
-        when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.empty())))
-                .thenReturn(Optional.of(eurToAllCachedRates));
+        when(existingCurrencies.doesCurrencyExist(sourceCurrency)).thenReturn(false);
 
         // Act & Assert
         assertThrows(
@@ -311,17 +315,17 @@ class CurrencyServiceTest {
         // set an expectation on the cache - B -> (ALL) rates should be cached
         when(cacheService.get(mockBuildCacheKey(targetCurrency, Optional.empty())))
                 .thenReturn(Optional.of(eurToAllCachedRates));
+        setupExistingCurrenciesMock(sourceCurrency, targetCurrency);
 
         // Act
         CurrencyConversionDTO response =
-                currencyService.getCurrencyConversionRates(targetCurrency, Optional.empty());
+                currencyService.getCurrencyConversionRates(
+                        sourceCurrency, Optional.of(targetCurrency));
 
         // Assert
-        assertEquals(1 / expectedRate, response.getTargets().get(sourceCurrency));
-        assertEquals(
-                eurToAllCachedRates.getRates().size(),
-                response.getTargets().size()); // only a single target -> USD
-        assertEquals(targetCurrency, response.getBase());
+        assertEquals(expectedRate, response.getTargets().get(targetCurrency));
+        assertEquals(1, response.getTargets().size()); // only a single target -> USD
+        assertEquals(sourceCurrency, response.getBase());
         // 1 cache hit should happen (B -> (ALL)), and we can get B -> A, and A -> B from that
         verify(cacheService, times(1)).get(mockBuildCacheKey(targetCurrency, Optional.empty()));
     }
@@ -337,6 +341,7 @@ class CurrencyServiceTest {
         // set an expectation on the cache - A -> B rates should be cached
         when(cacheService.get(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))))
                 .thenReturn(Optional.of(usdToEurCachedRates));
+        setupExistingCurrenciesMock(sourceCurrency, List.of(targetCurrency));
 
         // Act
         ValueConversionDTO conversionResult =
@@ -368,6 +373,20 @@ class CurrencyServiceTest {
                         });
     }
 
+    private void setupExistingCurrenciesMock(String source, String target) {
+        when(existingCurrencies.doesCurrencyExist(source)).thenReturn(true);
+        when(existingCurrencies.doesCurrencyExist(target)).thenReturn(true);
+    }
+
+    private void setupExistingCurrenciesMock(String source) {
+        when(existingCurrencies.doesCurrencyExist(source)).thenReturn(true);
+    }
+
+    private void setupExistingCurrenciesMock(String source, List<String> targets) {
+        when(existingCurrencies.doesCurrencyExist(source)).thenReturn(true);
+        when(existingCurrencies.anyCurrencyExists(targets)).thenReturn(true);
+    }
+
     // Mock implementation of buildCacheKey for testing purposes
     private String mockBuildCacheKey(String sourceCurrency, Optional<String> targetCurrency) {
         if (targetCurrency.isEmpty()) {
@@ -381,13 +400,6 @@ class CurrencyServiceTest {
     private static Instant now = Instant.now();
     private static final double USD_TO_EUR_RATE = 2.0;
     private static final double EUR_TO_USD_RATE = 1 / USD_TO_EUR_RATE;
-    private static CurrencyRatesResponse invalidResponse =
-            new CurrencyRatesResponse(
-                    false,
-                    Instant.now(),
-                    "",
-                    null,
-                    new ExternalAPIError(999, "Invalid source currency."));
     private static CurrencyRatesResponse usdToEurResponse =
             new CurrencyRatesResponse(true, now, "USD", Map.of("EUR", USD_TO_EUR_RATE), null);
     private static CurrencyRatesResponse usdToAllResponse =

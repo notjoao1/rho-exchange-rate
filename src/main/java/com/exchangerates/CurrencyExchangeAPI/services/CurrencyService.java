@@ -55,7 +55,8 @@ public class CurrencyService implements ICurrencyService {
             throw new BusinessException("Invalid base currency - does not exist");
         }
 
-        if (targetCurrency.isPresent() && !existingCurrencies.doesCurrencyExist(targetCurrency.get())) {
+        if (targetCurrency.isPresent()
+                && !existingCurrencies.doesCurrencyExist(targetCurrency.get())) {
             throw new BusinessException("Invalid target currency - does not exist");
         }
 
@@ -79,7 +80,8 @@ public class CurrencyService implements ICurrencyService {
         }
 
         if (!existingCurrencies.anyCurrencyExists(targetCurrencies)) {
-            throw new BusinessException("None of the target currencies exist, please provide correct input values");
+            throw new BusinessException(
+                    "None of the target currencies exist, please provide correct input values");
         }
 
         var currencyRatesResponse = fetchCurrencyExchangeRates(baseCurrency, targetCurrencies);

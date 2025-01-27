@@ -25,9 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 @ExtendWith(MockitoExtension.class)
 class CurrencyAPIClientTest {
 
-    @Mock private RestTemplate restTemplate;
+    @Mock RestTemplate restTemplate;
 
-    @InjectMocks private CurrencyAPIClient currencyAPIClient;
+    @InjectMocks CurrencyAPIClient currencyAPIClient;
 
     @Test
     void fetchAvailableCurrencies_Success() {
