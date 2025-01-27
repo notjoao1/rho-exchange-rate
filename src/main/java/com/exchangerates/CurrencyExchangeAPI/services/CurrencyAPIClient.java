@@ -51,7 +51,7 @@ public class CurrencyAPIClient implements ICurrencyAPIClient {
     public CurrencyRatesResponse fetchCurrencyExchangeRates(
             String baseCurrency, List<String> targetCurrencies) {
         var requestUri =
-                UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL)
+                UriComponentsBuilder.fromUriString(BASE_EXCHANGERATE_API_URL + "/live")
                         .queryParam("access_key", exchangeRateKey)
                         .queryParam("source", baseCurrency)
                         .queryParam("currencies", String.join(",", targetCurrencies))
