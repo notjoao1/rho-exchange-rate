@@ -28,10 +28,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         (requests) ->
                                 requests.requestMatchers(
+                                                "/api/v1/docs/**",
+                                                "/api/v1/docs-spec/**",
                                                 "/error",
                                                 "/api/v1/auth/**",
-                                                "/api/docs/**",
-                                                "/api/swagger-ui/**")
+                                                "/api/v1/swagger-ui/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
