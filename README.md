@@ -24,6 +24,12 @@ Proof:
 a = 1.2b ==> b = a/1.2 ==> b = (1/1.2)a
 ```
 
+## API Documentation
+
+- This API provides an OpenAPI specification which can be viewed using `Swagger`, exposed at the `/api/v1/docs` endpoint ([locally](http://localhost:8080/api/v1/docs))
+- The OpenAPI specification file is supplied at the `/api/v1/docs-spec` endpoint ([locally](http://localhost:8080/api/v1/docs-spec))
+- It was documented in code using [**springdoc-openapi**](https://springdoc.org/).
+
 ## Architecture
 
 - **Backend:** Spring Boot
