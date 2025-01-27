@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Holds available currencies in an immutable, lazy loaded and thread-safe way.
+ * Double-check pattern for lazy loading: https://en.wikipedia.org/wiki/Double-checked_locking
  */
 @Service
 public class AvailableCurrenciesHolder {
@@ -18,7 +19,7 @@ public class AvailableCurrenciesHolder {
     private final ICurrencyAPIClient currencyAPIClient;
     private static final String REDIS_KEY = "available:currencies";
 
-    private Set<String> availableCurrencies; // lazy loaded
+    private volatile Set<String> availableCurrencies; // lazy loaded
     // cache it for a long time (2 day)
     private static long AVAILABLE_CURRENCIES_TTL = 60 * 60 * 24;
 
