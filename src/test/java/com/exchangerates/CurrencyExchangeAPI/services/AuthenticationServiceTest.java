@@ -10,9 +10,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.exchangerates.CurrencyExchangeAPI.contracts.requests.AccountCredentialsDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.AccountResponseDTO;
+import com.exchangerates.CurrencyExchangeAPI.entities.User;
+import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
+import com.exchangerates.CurrencyExchangeAPI.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,22 +24,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.exchangerates.CurrencyExchangeAPI.contracts.requests.AccountCredentialsDTO;
-import com.exchangerates.CurrencyExchangeAPI.contracts.responses.AccountResponseDTO;
-import com.exchangerates.CurrencyExchangeAPI.entities.User;
-import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
-import com.exchangerates.CurrencyExchangeAPI.repository.UserRepository;
-
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
-    @InjectMocks
-    AuthenticationService authenticationService;
+    @InjectMocks AuthenticationService authenticationService;
 
-    @Mock
-    UserRepository userRepository;
+    @Mock UserRepository userRepository;
 
-    @Mock
-    PasswordEncoder passwordEncoder;
+    @Mock PasswordEncoder passwordEncoder;
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_PASSWORD = "password123";
@@ -48,11 +43,13 @@ class AuthenticationServiceTest {
         var credentials = new AccountCredentialsDTO(VALID_EMAIL, VALID_PASSWORD);
         when(userRepository.existsByEmail(VALID_EMAIL)).thenReturn(false);
         when(passwordEncoder.encode(VALID_PASSWORD)).thenReturn(ENCODED_PASSWORD);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            user.setId(1L);
-            return user;
-        });
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(
+                        invocation -> {
+                            User user = invocation.getArgument(0);
+                            user.setId(1L);
+                            return user;
+                        });
 
         // Act
         AccountResponseDTO response = authenticationService.signUp(credentials);
@@ -96,8 +93,9 @@ class AuthenticationServiceTest {
         when(userRepository.findByEmail(VALID_EMAIL)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(BusinessException.class, 
-            () -> authenticationService.getAccountInformation(credentials));
+        assertThrows(
+                BusinessException.class,
+                () -> authenticationService.getAccountInformation(credentials));
     }
 
     @Test
@@ -109,8 +107,9 @@ class AuthenticationServiceTest {
         when(passwordEncoder.matches("wrong_password", ENCODED_PASSWORD)).thenReturn(false);
 
         // Act & Assert
-        assertThrows(BusinessException.class, 
-            () -> authenticationService.getAccountInformation(credentials));
+        assertThrows(
+                BusinessException.class,
+                () -> authenticationService.getAccountInformation(credentials));
     }
 
     @Test
@@ -138,7 +137,8 @@ class AuthenticationServiceTest {
         var user = createValidUser();
         when(userRepository.findByEmail(VALID_EMAIL)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(VALID_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         AccountResponseDTO response = authenticationService.revokeAPIKey(credentials);

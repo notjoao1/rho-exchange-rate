@@ -222,7 +222,6 @@ public class CurrencyService implements ICurrencyService {
 
         for (var currencyExchangePair : res.getQuotes().entrySet()) {
             var target = currencyExchangePair.getKey();
-            System.out.println("Gonna cache the following key: " + buildCacheKey(res.getSource(), Optional.of(target)));
             cacheService.set(
                     buildCacheKey(res.getSource(), Optional.of(target)),
                     new CachedRates(

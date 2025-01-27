@@ -55,10 +55,4 @@ public class RateLimiterFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
-    // @Override
-    // protected boolean shouldNotFilter(HttpServletRequest request) {
-    //     var requestPath = request.getRequestURI();
-    //     return requestPath.contains("/auth") || requestPath.contains("/api/v1/docs") || requestPath.contains("/api/v1/swagger-ui");
-    // }
 }

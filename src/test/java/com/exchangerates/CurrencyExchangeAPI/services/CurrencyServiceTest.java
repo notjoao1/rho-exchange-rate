@@ -17,13 +17,11 @@ import com.exchangerates.CurrencyExchangeAPI.domain.CurrencyRatesResponseError;
 import com.exchangerates.CurrencyExchangeAPI.exception.BusinessException;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheKeyBuilderService;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICacheService;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -65,11 +63,15 @@ class CurrencyServiceTest {
         verify(cacheService, times(4)).get(anyString());
         // should save USD -> EUR conversion in cache with some defined TTL
         verify(cacheService, times(1))
-                .set(eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))), any(CachedRates.class), any(Duration.class));
+                .set(
+                        eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))),
+                        any(CachedRates.class),
+                        any(Duration.class));
     }
 
     @Test
-    void givenValidSourceCurrencyAndEmptyTarget_FetchExchangeRateShouldReturnConversionForAllAvailableCurrencies() {
+    void
+            givenValidSourceCurrencyAndEmptyTarget_FetchExchangeRateShouldReturnConversionForAllAvailableCurrencies() {
         // Arrange
         setupEmptyCacheExpectations();
         String sourceCurrency = "USD";
@@ -89,7 +91,10 @@ class CurrencyServiceTest {
         verify(cacheService, times(1)).get(anyString());
         // should save USD -> (ALL) conversion in cache with some defined TTL
         verify(cacheService, times(1))
-                .set(eq(mockBuildCacheKey(sourceCurrency, Optional.empty())), any(CachedRates.class), any(Duration.class));
+                .set(
+                        eq(mockBuildCacheKey(sourceCurrency, Optional.empty())),
+                        any(CachedRates.class),
+                        any(Duration.class));
     }
 
     @Test
@@ -123,7 +128,6 @@ class CurrencyServiceTest {
                     currencyService.getCurrencyConversionRates(
                             sourceCurrency, Optional.of(targetCurrency));
                 });
-
     }
 
     @Test
@@ -165,11 +169,15 @@ class CurrencyServiceTest {
         assertEquals(amount, conversionResult.getRequestedValue());
         // should save USD -> EUR conversion in cache with some defined TTL
         verify(cacheService, times(1))
-                .set(eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))), any(CachedRates.class), any(Duration.class));
+                .set(
+                        eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))),
+                        any(CachedRates.class),
+                        any(Duration.class));
     }
 
     @Test
-    void givenConvertToMultipleTargetCurrencies_ConvertCurrencyShouldReturnAndCacheAllTargetCurrencies() {
+    void
+            givenConvertToMultipleTargetCurrencies_ConvertCurrencyShouldReturnAndCacheAllTargetCurrencies() {
         // Arrange
         setupCacheKeyBuilderMock();
         double amount = 100.0;
@@ -190,11 +198,13 @@ class CurrencyServiceTest {
         assertEquals(amount, conversionResult.getRequestedValue());
 
         // should save USD -> EUR, USD -> CHF, USD -> JPY conversions in cache with some defined TTL
-        for (var targetCurrency: targetCurrencies) {
+        for (var targetCurrency : targetCurrencies) {
             verify(cacheService, times(1))
-                .set(eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))), any(CachedRates.class), any(Duration.class));
+                    .set(
+                            eq(mockBuildCacheKey(sourceCurrency, Optional.of(targetCurrency))),
+                            any(CachedRates.class),
+                            any(Duration.class));
         }
-
     }
 
     @Test
@@ -323,7 +333,6 @@ class CurrencyServiceTest {
                     currencyService.getCurrencyConversionRates(
                             sourceCurrency, Optional.of(targetCurrency));
                 });
-
     }
 
     @Test
@@ -343,7 +352,6 @@ class CurrencyServiceTest {
                     currencyService.getCurrencyConversionRates(
                             sourceCurrency, Optional.of(targetCurrency));
                 });
-
     }
 
     @Test
@@ -426,32 +434,26 @@ class CurrencyServiceTest {
     private static Instant now = Instant.now();
     private static final double USD_TO_EUR_RATE = 2.0;
     private static final double EUR_TO_USD_RATE = 1 / USD_TO_EUR_RATE;
-    private static CurrencyRatesResponse invalidResponse = new CurrencyRatesResponse(
-        false,
-        Instant.now(),
-        "",
-        null,
-        new CurrencyRatesResponseError(999, "Invalid source currency."));
+    private static CurrencyRatesResponse invalidResponse =
+            new CurrencyRatesResponse(
+                    false,
+                    Instant.now(),
+                    "",
+                    null,
+                    new CurrencyRatesResponseError(999, "Invalid source currency."));
     private static CurrencyRatesResponse usdToEurResponse =
-        new CurrencyRatesResponse(true, now, "USD", Map.of("EUR", USD_TO_EUR_RATE), null);
-    private static CurrencyRatesResponse eurToUSDResponse = 
-        new CurrencyRatesResponse(true, now, "EUR", Map.of("USD", EUR_TO_USD_RATE), null);
+            new CurrencyRatesResponse(true, now, "USD", Map.of("EUR", USD_TO_EUR_RATE), null);
     private static CurrencyRatesResponse usdToAllResponse =
-        new CurrencyRatesResponse(
-                true,
-                now,
-                "USD",
-                Map.of("EUR", USD_TO_EUR_RATE, "JPY", 100.0, "CHF", 5.0),
-                null);
-    private static CurrencyRatesResponse eurToAllResponse =
-        new CurrencyRatesResponse(
-                true,
-                now,
-                "EUR",
-                Map.of("USD", EUR_TO_USD_RATE, "JPY", 100.0, "CHF", 5.0),
-                null);
-    private static CachedRates usdToEurCachedRates = new CachedRates(Map.of("EUR", USD_TO_EUR_RATE), now);
-    private static CachedRates eurToUSDCachedRates = new CachedRates(Map.of("USD", EUR_TO_USD_RATE), now);
+            new CurrencyRatesResponse(
+                    true,
+                    now,
+                    "USD",
+                    Map.of("EUR", USD_TO_EUR_RATE, "JPY", 100.0, "CHF", 5.0),
+                    null);
+    private static CachedRates usdToEurCachedRates =
+            new CachedRates(Map.of("EUR", USD_TO_EUR_RATE), now);
+    private static CachedRates eurToUSDCachedRates =
+            new CachedRates(Map.of("USD", EUR_TO_USD_RATE), now);
     private static CachedRates usdToAllCachedRates =
             new CachedRates(Map.of("EUR", USD_TO_EUR_RATE, "JPY", 100.0, "CHF", 5.0), now);
     private static CachedRates eurToAllCachedRates =
