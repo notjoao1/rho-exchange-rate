@@ -1,11 +1,11 @@
 package com.exchangerates.CurrencyExchangeAPI.controllers;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.CurrencyConversionDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ErrorMessage;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ValueConversionDTO;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.ICurrencyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,11 +62,21 @@ public class CurrencyController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = ErrorResponse.class))),
-                @ApiResponse(responseCode = "429", description = "Rate limit exceeded"),
+                                        schema = @Schema(implementation = ErrorMessage.class))),
+                @ApiResponse(
+                        responseCode = "429",
+                        description = "Rate limit exceeded",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class))),
                 @ApiResponse(
                         responseCode = "502",
-                        description = "Upstream server returned invalid response")
+                        description = "Upstream server returned invalid response",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class))),
             })
     @GetMapping("rate")
     public ResponseEntity<CurrencyConversionDTO> getConversionRateBetweenCurrencies(
@@ -89,7 +98,10 @@ public class CurrencyController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = ValueConversionDTO.class))),
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                ValueConversionDTO.class))),
                 @ApiResponse(
                         responseCode = "400",
                         description =
@@ -98,11 +110,21 @@ public class CurrencyController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = ErrorResponse.class))),
-                @ApiResponse(responseCode = "429", description = "Rate limit exceeded"),
+                                        schema = @Schema(implementation = ErrorMessage.class))),
+                @ApiResponse(
+                        responseCode = "429",
+                        description = "Rate limit exceeded",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class))),
                 @ApiResponse(
                         responseCode = "502",
-                        description = "Upstream server returned invalid response")
+                        description = "Upstream server returned invalid response",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class))),
             })
     @GetMapping("convert")
     public ResponseEntity<ValueConversionDTO> getConversionRateBetweenCurrencies(

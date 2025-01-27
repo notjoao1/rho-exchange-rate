@@ -2,6 +2,7 @@ package com.exchangerates.CurrencyExchangeAPI.controllers;
 
 import com.exchangerates.CurrencyExchangeAPI.contracts.requests.AccountCredentialsDTO;
 import com.exchangerates.CurrencyExchangeAPI.contracts.responses.AccountResponseDTO;
+import com.exchangerates.CurrencyExchangeAPI.contracts.responses.ErrorMessage;
 import com.exchangerates.CurrencyExchangeAPI.services.interfaces.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +50,11 @@ public class AuthenticationController {
                                                                 AccountResponseDTO.class))),
                 @ApiResponse(
                         responseCode = "400",
-                        description = "Invalid input credentials or email already registered."),
+                        description = "Invalid input credentials or email already registered.",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class))),
             })
     @PostMapping("signup")
     public ResponseEntity<AccountResponseDTO> signUp(
@@ -68,7 +73,13 @@ public class AuthenticationController {
                 @ApiResponse(
                         responseCode = "200",
                         description = "Account information retrieved successfully"),
-                @ApiResponse(responseCode = "400", description = "Invalid credentials")
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid credentials",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class)))
             })
     @GetMapping("info")
     public ResponseEntity<AccountResponseDTO> getAccountInformation(
@@ -85,7 +96,13 @@ public class AuthenticationController {
                 @ApiResponse(
                         responseCode = "201",
                         description = "New API key generated successfully"),
-                @ApiResponse(responseCode = "400", description = "Invalid credentials")
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid credentials",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = ErrorMessage.class)))
             })
     @PutMapping("revoke-apikey")
     public ResponseEntity<AccountResponseDTO> revokeAPIKey(
