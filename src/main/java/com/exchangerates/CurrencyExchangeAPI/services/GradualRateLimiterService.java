@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class LeakyBucketRateLimiterService implements IRateLimitService {
+public class GradualRateLimiterService implements IRateLimitService {
 
-    // TODO: this rate limiter is very coupled to Redis right now, which is not ideal
     private final RedisOperations<String, Object> redisOperations;
     // Script inputs: 1 key + 3 arguments - time of the request (unix epoch), the leak rate of
     // buckets, and the maximum capacity
