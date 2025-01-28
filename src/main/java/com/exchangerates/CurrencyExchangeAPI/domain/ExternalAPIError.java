@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CurrencyRatesResponseError {
+public class ExternalAPIError {
     private int code;
     private String info;
 }

@@ -1,6 +1,5 @@
 package com.exchangerates.CurrencyExchangeAPI.domain;
 
-import java.time.Instant;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CurrencyRatesResponse {
+public class AvailableCurrenciesResponse {
     private boolean success;
-    private Instant timestamp;
-    private String source;
-    private Map<String, Double> quotes;
+    private Map<String, String> currencies;
     // filled out when success = false
     private ExternalAPIError error;
 }
