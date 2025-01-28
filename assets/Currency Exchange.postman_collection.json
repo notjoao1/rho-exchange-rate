@@ -1,0 +1,1093 @@
+{
+	"info": {
+		"_postman_id": "fb622ae4-fec2-4f10-a2f5-32885ab3eb79",
+		"name": "Currency Exchange",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39203363"
+	},
+	"item": [
+		{
+			"name": "Successful Flow",
+			"item": [
+				{
+					"name": "1. Create Account",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/signup",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. View account data",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/info",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Revoke API key",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/revoke-apikey",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"revoke-apikey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Get Conversion Rate EUR -> USD",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=USD",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "USD"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.1. Get Conversion Rate USD -> EUR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=USD&to=EUR",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "USD"
+								},
+								{
+									"key": "to",
+									"value": "EUR"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Get Conversion Rate EUR -> ALL",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=eur",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "eur"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.1. Get Conversion Rate EUR -> USD",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=USD",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "USD"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.2. Get Conversion Rate USD -> EUR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=USD&to=EUR",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "USD"
+								},
+								{
+									"key": "to",
+									"value": "EUR"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.3. Get Conversion Rate EUR -> CHF",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=CHF",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "CHF"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.4. Convert EUR -> JPY",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=EUR&to=JPY&value=0.1",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "JPY"
+								},
+								{
+									"key": "value",
+									"value": "0.1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Convert JPY -> SGD",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=JPY&to=SGD&value=0.1",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "JPY"
+								},
+								{
+									"key": "to",
+									"value": "SGD"
+								},
+								{
+									"key": "value",
+									"value": "0.1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Convert JPY -> SGD, USD, EUR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"joao.p.dourado1@gmail.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=JPY&to=SGD,USD,EUR&value=0.1",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "JPY"
+								},
+								{
+									"key": "to",
+									"value": "SGD,USD,EUR"
+								},
+								{
+									"key": "value",
+									"value": "0.1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error cases",
+			"item": [
+				{
+					"name": "1. Sign Up No Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@test.com\",\n    \"password\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/signup",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.1. Sign Up Invalid Email",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test.test.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/signup",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Account Info non existent account",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/info",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Invalid Credentials revoke API key",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/auth/revoke-apikey",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"revoke-apikey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Exchange rates - non existent base currency",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=NOPE&to=CHF",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "NOPE"
+								},
+								{
+									"key": "to",
+									"value": "CHF"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.1. Exchange rates - non existent target currency",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=NOPE",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "NOPE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.1. Exchange rates - no auth",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=NOPE",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "NOPE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Convert - negative amount",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=EUR&to=JPY&value=-10",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "JPY"
+								},
+								{
+									"key": "value",
+									"value": "-10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.1. Convert - 0 amount",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=EUR&to=JPY&value=0",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "JPY"
+								},
+								{
+									"key": "value",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.2. Convert - non existent base",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=INVALID&to=JPY&value=10",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "INVALID"
+								},
+								{
+									"key": "to",
+									"value": "JPY"
+								},
+								{
+									"key": "value",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.3. Convert - non existent any target",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nope@unexistent.com\",\n    \"password\": \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/convert?from=EUR&to=INVALID1,INVALID2&value=10",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"convert"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "INVALID1,INVALID2"
+								},
+								{
+									"key": "value",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rate limiting",
+			"item": [
+				{
+					"name": "(send this request ~20x fast to test rate limiting)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-KEY",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseAPI}}/api/v1/currency/rate?from=EUR&to=USD",
+							"host": [
+								"{{baseAPI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currency",
+								"rate"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "EUR"
+								},
+								{
+									"key": "to",
+									"value": "USD"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "inherit"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseAPI",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "SWT1SWYddmGjWvGUuK94J2txV8qvvLqUqhbN7+Khgig=",
+			"type": "string"
+		}
+	]
+}
