@@ -110,6 +110,8 @@ This means that there are 2 possibly cached results: `A to B` and `A to (ALL)`.
 
 3. If the user requests converting a certain amount of currency from `A` to a list of currencies, we only check the cache when there's only a single target currency. This might not be ideal, but it prevents the issue from the previous point (2.)
 
+In all of the previous 3 cases, if we do not get a cache hit, we make a request to the external API.
+
 ### Preventing requests to non-existent currencies
 
 **IMPORTANT:** This optimization assumes that the list of currency doesn't change frequently.
