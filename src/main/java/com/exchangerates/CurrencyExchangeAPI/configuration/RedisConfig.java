@@ -45,7 +45,7 @@ public class RedisConfig {
     @Bean
     public DefaultRedisScript<Boolean> rateLimitingScript() {
         ScriptSource scriptSource =
-                new ResourceScriptSource(new ClassPathResource("scripts/leakybucket.lua"));
+                new ResourceScriptSource(new ClassPathResource("scripts/ratelimiter.lua"));
         DefaultRedisScript<Boolean> script = new DefaultRedisScript<>();
         script.setScriptSource(scriptSource);
         script.setResultType(Boolean.class);

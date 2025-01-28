@@ -15,7 +15,7 @@ public class GradualRateLimiterService implements IRateLimitService {
     private final RedisOperations<String, Object> redisOperations;
     // Script inputs: 1 key + 3 arguments - time of the request (unix epoch), the leak rate of
     // buckets, and the maximum capacity
-    private final RedisScript<Boolean> leakyBucketScript;
+    private final RedisScript<Boolean> rateLimiterScript;
 
     private static final double DRAIN_RATE = 1.0;
     private static final int LIMIT = 10;
@@ -24,7 +24,7 @@ public class GradualRateLimiterService implements IRateLimitService {
     public boolean applyRateLimiting(String rateLimitKey) {
         // returns boolean representing whether the request will be allowed for this apiKey
         return redisOperations.execute(
-                leakyBucketScript,
+                rateLimiterScript,
                 List.of(rateLimitKey),
                 Instant.now().getEpochSecond(),
                 DRAIN_RATE,
