@@ -30,7 +30,10 @@ git clone git@github.com:notjoao1/rho-exchange-rate.git
 cd rho-exchange-rate
 ```
 
-2. Run the application
+2. Set your environment variables - including the **external API key** for [`exchangerate`](https://exchangerate.host/).
+
+
+3. Run the application
 
 - \[RECOMMENDED\] With **docker**:
 ```sh
